@@ -16,7 +16,7 @@ export default function AssessmentSetupPage() {
 
   // Step 1: Practitioner Info + Respondent Info
   const [practitionerName, setPractitionerName] = useState('')
-  const [respondentCode, setRespondentCode] = useState('')
+  const [respondentCode, setRespondentCodeLocal] = useState('')
   const [age, setAge] = useState('')
   const [gender, setGender] = useState('MALE')
   const [education, setEducation] = useState('')
@@ -148,7 +148,7 @@ export default function AssessmentSetupPage() {
                 <input
                   type="text"
                   value={respondentCode}
-                  onChange={(e) => setRespondentCode(e.target.value)}
+                  onChange={(e) => setRespondentCodeLocal(e.target.value)}
                   className="w-full px-4 py-2 border border-border-light rounded-lg font-body"
                   placeholder="Auto-generated if blank"
                 />
