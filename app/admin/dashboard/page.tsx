@@ -1,8 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { useAuthStore } from '@/lib/store'
 import axios from 'axios'
 import Link from 'next/link'
 
@@ -15,22 +13,13 @@ interface AdminStats {
 }
 
 export default function AdminDashboardPage() {
-  const router = useRouter()
-  const { user, token } = useAuthStore()
   const [stats, setStats] = useState<AdminStats | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!token || user?.role !== 'ADMIN') {
-      router.push('/login')
-      return
-    }
-
     const fetchStats = async () => {
       try {
-        const response = await axios.get('/api/admin/stats', {
-          headers: { Authorization: `Bearer ${token}` },
-        })
+        const response = await axios.get('/api/admin/stats')
         setStats(response.data)
       } catch (err) {
         console.error('Failed to fetch stats:', err)
@@ -40,11 +29,7 @@ export default function AdminDashboardPage() {
     }
 
     fetchStats()
-  }, [token, user?.role, router])
-
-  if (!token || user?.role !== 'ADMIN') {
-    return null
-  }
+  }, [])
 
   return (
     <div className="min-h-screen bg-bg-primary">

@@ -2,12 +2,11 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuthStore, useSessionStore } from '@/lib/store'
+import { useSessionStore } from '@/lib/store'
 import axios from 'axios'
 
 export default function AssessmentSetupPage() {
   const router = useRouter()
-  const { token, user } = useAuthStore()
   const { setSessionId, setRespondentCode, setMppiOrder, setLanguage } =
     useSessionStore()
 
@@ -15,7 +14,8 @@ export default function AssessmentSetupPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  // Step 1: Respondent Info
+  // Step 1: Practitioner Info + Respondent Info
+  const [practitionerName, setPractitionerName] = useState('')
   const [respondentCode, setRespondentCode] = useState('')
   const [age, setAge] = useState('')
   const [gender, setGender] = useState('MALE')
@@ -33,8 +33,8 @@ export default function AssessmentSetupPage() {
 
   const handleStep1Submit = () => {
     setError('')
-    if (!age || !gender) {
-      setError('Age and gender are required')
+    if (!practitionerName || !age || !gender) {
+      setError('Practitioner name, age, and gender are required')
       return
     }
     setStep(2)
@@ -60,9 +60,6 @@ export default function AssessmentSetupPage() {
           state,
           country,
           language,
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
         }
       )
 
@@ -73,10 +70,8 @@ export default function AssessmentSetupPage() {
         '/api/sessions',
         {
           respondentCode: respondent.respondentCode,
+          practitionerName,
           mppiOrder,
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
         }
       )
 
@@ -97,11 +92,6 @@ export default function AssessmentSetupPage() {
     } finally {
       setLoading(false)
     }
-  }
-
-  if (!token) {
-    router.push('/login')
-    return null
   }
 
   return (
@@ -128,8 +118,28 @@ export default function AssessmentSetupPage() {
           {step === 1 && (
             <div className="space-y-4">
               <h2 className="text-xl font-display text-text-primary mb-6">
-                Respondent Information
+                Assessment Setup
               </h2>
+
+              <div>
+                <label className="block text-sm font-ui text-text-primary mb-1">
+                  Practitioner Name *
+                </label>
+                <input
+                  type="text"
+                  value={practitionerName}
+                  onChange={(e) => setPractitionerName(e.target.value)}
+                  className="w-full px-4 py-2 border border-border-light rounded-lg font-body"
+                  placeholder="Your name"
+                  required
+                />
+              </div>
+
+              <div className="border-t border-border-light pt-4 mt-4">
+                <h3 className="text-sm font-ui font-600 text-text-primary mb-4">
+                  Respondent Information
+                </h3>
+              </div>
 
               <div>
                 <label className="block text-sm font-ui text-text-primary mb-1">

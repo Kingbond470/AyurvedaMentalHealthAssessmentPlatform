@@ -1,27 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
-import { verifyToken, getTokenFromRequest } from '@/lib/auth'
 
 const prisma = new PrismaClient()
 
 export async function POST(request: NextRequest) {
   try {
-    const token = getTokenFromRequest(request)
-    if (!token) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const payload = verifyToken(token)
-    if (!payload) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
-    }
-
     const body = await request.json()
-    const { respondentCode, mppiOrder } = body
+    const { respondentCode, practitionerName, mppiOrder } = body
 
-    if (!respondentCode) {
+    if (!respondentCode || !practitionerName) {
       return NextResponse.json(
-        { error: 'Missing respondentCode' },
+        { error: 'Missing respondentCode or practitionerName' },
         { status: 400 }
       )
     }
@@ -40,7 +29,7 @@ export async function POST(request: NextRequest) {
     const session = await prisma.session.create({
       data: {
         respondentId: respondent.id,
-        practitionerId: payload.userId,
+        practitionerName,
         status: 'IN_PROGRESS',
         mppiOrder: mppiOrder || 'BEFORE_GAD7',
       },
@@ -58,18 +47,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const token = getTokenFromRequest(request)
-    if (!token) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const payload = verifyToken(token)
-    if (!payload) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
-    }
-
     const sessions = await prisma.session.findMany({
-      where: { practitionerId: payload.userId },
       include: {
         respondent: true,
         result: true,

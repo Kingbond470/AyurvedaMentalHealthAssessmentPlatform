@@ -1,8 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { useAuthStore } from '@/lib/store'
 import axios from 'axios'
 
 interface Item {
@@ -16,24 +14,15 @@ interface Item {
 }
 
 export default function ItemsManagementPage() {
-  const router = useRouter()
-  const { user, token } = useAuthStore()
   const [items, setItems] = useState<Item[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('')
   const [editingId, setEditingId] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!token || user?.role !== 'ADMIN') {
-      router.push('/login')
-      return
-    }
-
     const fetchItems = async () => {
       try {
-        const response = await axios.get('/api/admin/items', {
-          headers: { Authorization: `Bearer ${token}` },
-        })
+        const response = await axios.get('/api/admin/items')
         setItems(response.data)
       } catch (err) {
         console.error('Failed to fetch items:', err)
@@ -43,11 +32,7 @@ export default function ItemsManagementPage() {
     }
 
     fetchItems()
-  }, [token, user?.role, router])
-
-  if (!token || user?.role !== 'ADMIN') {
-    return null
-  }
+  }, [])
 
   const filteredItems = items.filter(
     (item) =>

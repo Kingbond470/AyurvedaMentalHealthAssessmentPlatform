@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import { useAuthStore, useSessionStore } from '@/lib/store'
+import { useSessionStore } from '@/lib/store'
 import axios from 'axios'
 import AssessmentInterface from '@/components/AssessmentInterface'
 import GAD7Interface from '@/components/GAD7Interface'
@@ -12,7 +12,6 @@ type Phase = 'MPPI' | 'GAD7' | 'COMPLETE'
 export default function AssessmentPage() {
   const router = useRouter()
   const params = useParams()
-  const { token } = useAuthStore()
   const {
     mppiOrder,
     isAssessmentPhaseGAD7,
@@ -25,18 +24,10 @@ export default function AssessmentPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!token) {
-      router.push('/login')
-      return
-    }
-
     const determinePhase = async () => {
       try {
         const response = await axios.get(
-          `/api/sessions/${sessionId}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+          `/api/sessions/${sessionId}`
         )
 
         const session = response.data
@@ -53,7 +44,7 @@ export default function AssessmentPage() {
     }
 
     determinePhase()
-  }, [token, router, sessionId, mppiOrder, isAssessmentPhaseGAD7, setIsAssessmentPhaseGAD7])
+  }, [sessionId, mppiOrder, isAssessmentPhaseGAD7, setIsAssessmentPhaseGAD7])
 
   const handleMppiComplete = () => {
     if (mppiOrder === 'BEFORE_GAD7') {

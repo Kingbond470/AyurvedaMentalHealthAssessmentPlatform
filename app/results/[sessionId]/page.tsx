@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import { useAuthStore } from '@/lib/store'
 import axios from 'axios'
 import Link from 'next/link'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
@@ -44,7 +43,6 @@ const GAD7_SEVERITY_COLORS = {
 export default function ResultsPage() {
   const router = useRouter()
   const params = useParams()
-  const { token } = useAuthStore()
 
   const sessionId = params.sessionId as string
   const [session, setSession] = useState<SessionData | null>(null)
@@ -52,18 +50,10 @@ export default function ResultsPage() {
   const [showDetails, setShowDetails] = useState(false)
 
   useEffect(() => {
-    if (!token) {
-      router.push('/login')
-      return
-    }
-
     const fetchSession = async () => {
       try {
         const response = await axios.get(
-          `/api/sessions/${sessionId}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+          `/api/sessions/${sessionId}`
         )
         setSession(response.data)
       } catch (error) {
@@ -74,7 +64,7 @@ export default function ResultsPage() {
     }
 
     fetchSession()
-  }, [token, router, sessionId])
+  }, [sessionId])
 
   if (loading) {
     return (

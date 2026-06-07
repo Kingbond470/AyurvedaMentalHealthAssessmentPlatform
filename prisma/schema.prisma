@@ -7,25 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id            String     @id @default(cuid())
-  email         String     @unique
-  name          String?
-  passwordHash  String
-  role          UserRole   @default(PRACTITIONER)
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
-
-  sessions      Session[]
-
-  @@index([email])
-}
-
-enum UserRole {
-  PRACTITIONER
-  ADMIN
-}
-
 model Respondent {
   id              String    @id @default(cuid())
   respondentCode  String    @unique
@@ -62,8 +43,7 @@ model Session {
   id              String    @id @default(cuid())
   respondentId    String
   respondent      Respondent @relation(fields: [respondentId], references: [id], onDelete: Cascade)
-  practitionerId  String
-  practitioner    User      @relation(fields: [practitionerId], references: [id])
+  practitionerName String   // Name of practitioner (no auth)
 
   status          SessionStatus @default(IN_PROGRESS)
   mppiOrder       MPPIOrder     @default(BEFORE_GAD7)
@@ -83,7 +63,6 @@ model Session {
   updatedAt       DateTime  @updatedAt
 
   @@index([respondentId])
-  @@index([practitionerId])
   @@index([status])
 }
 
@@ -262,18 +241,6 @@ model SubtypeConfig {
   category          String    // SATTVIKA | RAJASIKA | TAMASIKA
   totalItems        Int
   maxScore          Int       // totalItems * 12
-
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-}
-
-model GoogleSheetsConfig {
-  id                String    @id @default(cuid())
-  spreadsheetId     String    @unique
-  sheetName         String
-  credentialsJson   String    // JSON string of service account credentials
-  synced            Boolean   @default(false)
-  lastSyncAt        DateTime?
 
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt

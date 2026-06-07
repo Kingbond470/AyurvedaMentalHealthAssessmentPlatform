@@ -272,25 +272,16 @@ const ReportPDF = ({ session }: { session: SessionData }) => {
 export default function ReportPage() {
   const router = useRouter()
   const params = useParams()
-  const { token } = useAuthStore()
 
   const sessionId = params.sessionId as string
   const [session, setSession] = useState<SessionData | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!token) {
-      router.push('/login')
-      return
-    }
-
     const fetchSession = async () => {
       try {
         const response = await axios.get(
-          `/api/sessions/${sessionId}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+          `/api/sessions/${sessionId}`
         )
         setSession(response.data)
       } catch (error) {
@@ -301,7 +292,7 @@ export default function ReportPage() {
     }
 
     fetchSession()
-  }, [token, router, sessionId])
+  }, [sessionId])
 
   if (loading || !session) {
     return (

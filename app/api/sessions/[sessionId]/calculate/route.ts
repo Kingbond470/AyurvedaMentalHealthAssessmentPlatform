@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
-import { verifyToken, getTokenFromRequest } from '@/lib/auth'
 import {
   calculateSubtypeScores,
   calculateGAD7Score,
@@ -14,16 +13,6 @@ export async function POST(
   { params }: { params: { sessionId: string } }
 ) {
   try {
-    const token = getTokenFromRequest(request)
-    if (!token) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const payload = verifyToken(token)
-    if (!payload) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
-    }
-
     const session = await prisma.session.findUnique({
       where: { id: params.sessionId },
       include: {
@@ -34,10 +23,6 @@ export async function POST(
 
     if (!session) {
       return NextResponse.json({ error: 'Session not found' }, { status: 404 })
-    }
-
-    if (session.practitionerId !== payload.userId && payload.role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
     // Calculate MPPI scores

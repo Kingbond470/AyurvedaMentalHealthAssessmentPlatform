@@ -1,8 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { useAuthStore } from '@/lib/store'
 import axios from 'axios'
 import Link from 'next/link'
 
@@ -13,6 +11,7 @@ interface SessionData {
     name?: string
     age?: number
   }
+  practitionerName: string
   status: string
   createdAt: string
   result?: {
@@ -22,22 +21,14 @@ interface SessionData {
 }
 
 export default function DashboardPage() {
-  const router = useRouter()
-  const { user, token, logout } = useAuthStore()
   const [sessions, setSessions] = useState<SessionData[]>([])
   const [loading, setLoading] = useState(true)
+  const [exporting, setExporting] = useState(false)
 
   useEffect(() => {
-    if (!token) {
-      router.push('/login')
-      return
-    }
-
     const fetchSessions = async () => {
       try {
-        const response = await axios.get('/api/sessions', {
-          headers: { Authorization: `Bearer ${token}` },
-        })
+        const response = await axios.get('/api/sessions')
         setSessions(response.data)
       } catch (err) {
         console.error('Failed to fetch sessions:', err)
@@ -47,48 +38,62 @@ export default function DashboardPage() {
     }
 
     fetchSessions()
-  }, [token, router])
+  }, [])
 
-  const handleLogout = () => {
-    logout()
-    router.push('/login')
+  const handleExportCSV = async () => {
+    setExporting(true)
+    try {
+      const response = await axios.get('/api/export/csv', {
+        responseType: 'blob',
+      })
+      const url = window.URL.createObjectURL(new Blob([response.data]))
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute(
+        'download',
+        `mpaap-export-${new Date().toISOString().split('T')[0]}.csv`
+      )
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    } catch (err) {
+      console.error('Failed to export CSV:', err)
+    } finally {
+      setExporting(false)
+    }
   }
 
   return (
     <div className="min-h-screen bg-bg-primary">
       {/* Header */}
       <header className="bg-bg-surface border-b border-border-light">
-        <div className="container-dashboard px-4 py-4 flex justify-between items-center">
+        <div className="container-dashboard px-4 py-6 flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-display text-text-primary">MPAAP</h1>
+            <h1 className="text-3xl font-display text-text-primary">MPAAP</h1>
             <p className="text-sm text-text-secondary font-ui">
-              Practitioner Dashboard
+              Sessions Dashboard
             </p>
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="text-sm font-ui text-text-secondary">
-              {user?.name || user?.email}
-            </span>
-            <button
-              onClick={handleLogout}
-              className="px-4 py-2 text-sm font-ui bg-bg-section text-text-primary rounded hover:bg-border-light transition"
-            >
-              Logout
-            </button>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="container-dashboard px-4 py-8">
-        {/* CTA Button */}
-        <div className="mb-8">
+        {/* CTA Buttons */}
+        <div className="mb-8 flex gap-3">
           <Link
             href="/assessment/setup"
             className="inline-block px-6 py-3 bg-primary-500 text-white font-ui font-600 rounded-lg hover:bg-primary-600 transition"
           >
             Start New Assessment
           </Link>
+          <button
+            onClick={handleExportCSV}
+            disabled={exporting}
+            className="inline-block px-6 py-3 bg-bg-section text-text-primary font-ui font-600 rounded-lg hover:bg-border-light transition disabled:opacity-50"
+          >
+            {exporting ? 'Exporting...' : 'Export as CSV'}
+          </button>
         </div>
 
         {/* Sessions List */}
@@ -116,6 +121,9 @@ export default function DashboardPage() {
                       Respondent
                     </th>
                     <th className="px-6 py-3 text-left font-ui font-600 text-text-primary">
+                      Practitioner
+                    </th>
+                    <th className="px-6 py-3 text-left font-ui font-600 text-text-primary">
                       Date
                     </th>
                     <th className="px-6 py-3 text-left font-ui font-600 text-text-primary">
@@ -138,6 +146,9 @@ export default function DashboardPage() {
                       <td className="px-6 py-4 font-body">
                         {session.respondent.name ||
                           session.respondent.respondentCode}
+                      </td>
+                      <td className="px-6 py-4 text-text-secondary font-ui text-sm">
+                        {session.practitionerName}
                       </td>
                       <td className="px-6 py-4 text-text-secondary font-ui text-sm">
                         {new Date(session.createdAt).toLocaleDateString()}

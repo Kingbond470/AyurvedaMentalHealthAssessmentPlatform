@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import { useSessionStore } from '@/lib/store'
 import axios from 'axios'
-import { useAuthStore } from '@/lib/store'
 
 interface ItemData {
   id: string
@@ -64,7 +63,6 @@ interface Props {
 }
 
 export default function AssessmentInterface({ sessionId, onComplete }: Props) {
-  const { token } = useAuthStore()
   const {
     currentSection,
     currentItem,
@@ -141,9 +139,6 @@ export default function AssessmentInterface({ sessionId, onComplete }: Props) {
           probe1Score: probe1,
           probe2Score: probe2,
           probe3Score: probe3,
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
         }
       )
 

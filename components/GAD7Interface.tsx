@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { useSessionStore } from '@/lib/store'
-import { useAuthStore } from '@/lib/store'
 import axios from 'axios'
 
 const GAD7_ITEMS = [
@@ -35,7 +34,6 @@ interface Props {
 }
 
 export default function GAD7Interface({ sessionId, onComplete }: Props) {
-  const { token } = useAuthStore()
   const { gad7Responses, setGAD7Response, setGAD7Impairment } = useSessionStore()
 
   const [currentItemIndex, setCurrentItemIndex] = useState(0)
@@ -84,9 +82,6 @@ export default function GAD7Interface({ sessionId, onComplete }: Props) {
           item6Score: scores[5],
           item7Score: scores[6],
           impairmentScore,
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
         }
       )
 
