@@ -34,48 +34,38 @@ git clone <repository-url>
 cd AyurvedaMentalHealthAssessmentPlatform
 ```
 
-## Step 3: Setup Database
+## Step 3: Setup Supabase Database
 
-### Option A: Local PostgreSQL (Recommended for Development)
-
-1. Download PostgreSQL from postgresql.org
-2. Run installer, set password = `postgres`
-3. Accept default port 5432
-4. After install, verify: Open Command Prompt → `psql -U postgres` → type password
-
-### Option B: Cloud PostgreSQL (Recommended for Production)
-
-1. Sign up for Neon, Railway, or Render
-2. Create new PostgreSQL database
-3. Copy connection string (looks like: `postgresql://user:password@host:5432/db`)
+1. Sign up at supabase.com (free tier included)
+2. Create new project
+3. Copy credentials from Settings → API:
+   - Project URL
+   - Publishable Key (anon key)
+4. Copy PostgreSQL connection string (for DATABASE_URL)
 
 ## Step 4: Environment Configuration
 
 1. Open project folder in text editor (VS Code recommended)
-2. Copy `.env.example` to `.env.local`:
+2. Create `.env.local` with Supabase credentials:
 
-```
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/manas_prakriti
-JWT_SECRET=your-super-secret-key-change-in-production
-JWT_EXPIRY=7d
-REFRESH_TOKEN_EXPIRY=30d
+```env
+# Supabase PostgreSQL connection
+DATABASE_URL=postgresql://postgres:[password]@[host]:5432/postgres
 
-GOOGLE_SHEETS_SPREADSHEET_ID=
-GOOGLE_SHEETS_CREDENTIALS_JSON=
+# Supabase API (from Settings → API)
+NEXT_PUBLIC_SUPABASE_URL=https://[project-id].supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=[anon-key]
 
+# App
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 NEXT_PUBLIC_API_URL=http://localhost:3000/api
 ```
 
-### For Google Sheets (Optional, Can Add Later)
-
-1. Go to Google Cloud Console (console.cloud.google.com)
-2. Create new project
-3. Enable "Google Sheets API"
-4. Create Service Account
-5. Download credentials as JSON
-6. Copy entire JSON into `GOOGLE_SHEETS_CREDENTIALS_JSON` (keep as single-line JSON)
-7. Share your Sheets spreadsheet with the service account email
+Replace placeholders from Supabase dashboard:
+- `[password]` - Postgres password
+- `[host]` - Database host (e.g., aws-0-us-east-1.pooler.supabase.com)
+- `[project-id]` - Your Supabase project ID
+- `[anon-key]` - Publishable API key
 
 ## Step 5: Initialize Database
 
@@ -88,10 +78,9 @@ npm run seed
 ```
 
 This creates:
-- Database structure
-- Demo practitioner: demo@example.com / demo1234
-- Demo admin: admin@example.com / demo1234
+- Database structure (Supabase tables)
 - 118 placeholder MPPI items + 7 GAD-7 items
+- 16 Prakriti subtype configurations
 
 ## Step 6: Run Application
 
@@ -101,16 +90,13 @@ npm run dev
 
 Open browser: http://localhost:3000
 
-Login with: demo@example.com / demo1234
+Auto-redirects to assessment setup (no login required)
 
 ## Step 7: Populate Question Content
 
-### As Admin
-
-1. Login: admin@example.com / demo1234
-2. Navigate: Admin Dashboard → Manage Item Bank
-3. Click first item (Item 1)
-4. Fill in:
+1. Navigate: http://localhost:3000/admin/items
+2. Click first item (Item 1)
+3. Fill in:
    - **Predictor (Sanskrit):** From Scoring Format.pdf
    - **Predictor (Devanagari):** From Scoring Format.pdf (transliterated)
    - **Interpretation:** What this trait means
@@ -121,40 +107,34 @@ Login with: demo@example.com / demo1234
    - **Section 14 Variant:** If Section 14, mark as "Male" or "Female" version
    - **Observer-Rated:** If Section 16, check this box
 
-5. Save & move to next item
-6. Repeat for all 118 items (this takes time—can be parallelized among team)
-
-### Bulk Import Option
-
-If you have items in CSV or Excel:
-- TBD: Implement bulk import endpoint
-- For now: Admin panel supports manual entry
+4. Save & move to next item
+5. Repeat for all 118 items (this takes time—can be parallelized among team)
 
 ## Step 8: Test Assessment Flow
 
-### As Practitioner (demo@example.com)
-
-1. Dashboard → "Start New Assessment"
-2. Enter respondent details
-3. Select assessment order (MPPI first or GAD-7 first)
-4. Complete sample assessment (just for testing)
-5. View results → Download PDF
+1. Go to http://localhost:3000 (auto-redirects to setup)
+2. Enter practitioner name
+3. Enter respondent details
+4. Select assessment order (MPPI first or GAD-7 first)
+5. Complete sample assessment (all 118 MPPI + 7 GAD-7 items)
+6. View results → Download PDF + CSV
 
 ### Troubleshooting
 
 **"Database connection error"**
-- Verify PostgreSQL is running
-- Check `DATABASE_URL` in `.env.local`
-- Try: `psql -U postgres -d manas_prakriti -c "SELECT 1"`
+- Verify DATABASE_URL in `.env.local` is correct
+- Check Supabase project is running (Supabase dashboard)
+- Verify PostgreSQL password is correct
+- Test: `npm run prisma:migrate` should succeed
 
 **"Items showing as 'placeholder'"**
 - Admin panel not yet populated with content
-- Items are there, just need text filled in
+- Items are there, just need text filled in via /admin/items
 
-**"Google Sheets not syncing"**
-- Verify service account JSON is valid
-- Check spreadsheet is shared with service account email
-- Test: POST to `/api/sessions/[id]/calculate` endpoint
+**"CSV export missing columns"**
+- Run complete assessment (all 118 items + GAD-7)
+- CSV will show all 118 item scores once session is completed
+- Download CSV from Dashboard → "Export as CSV"
 
 ## Step 9: Deployment (Production)
 
@@ -163,24 +143,27 @@ If you have items in CSV or Excel:
 1. Push code to GitHub
 2. Signup at Vercel.com, connect GitHub
 3. Select this repository
-4. Add environment variables (same as `.env.local`)
+4. Add environment variables:
+   - DATABASE_URL (Supabase PostgreSQL)
+   - NEXT_PUBLIC_SUPABASE_URL
+   - NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
 5. Deploy!
 
 ### Option B: Self-Hosted (Railway, Render, etc.)
 
 1. Signup at Railway or Render
 2. Connect GitHub repository
-3. Set environment variables
-4. Deploy & auto-scales
+3. Set environment variables (same as above)
+4. Deploy
 
-Both handle database setup automatically.
+Both auto-scale. Supabase database is managed separately (no server needed).
 
 ## Step 10: Launch to Practitioners
 
-1. Create practitioner accounts (Admin Dashboard → Users)
-2. Each practitioner gets: email + password
-3. Send them login link
-4. They can immediately start assessments
+1. Share application URL (e.g., https://mpaap.vercel.app)
+2. No login required—practitioners just enter their name
+3. They can immediately start assessments
+4. Results + CSV export available on dashboard
 
 ## Maintenance
 
