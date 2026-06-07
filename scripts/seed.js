@@ -1,5 +1,4 @@
 const { PrismaClient } = require('@prisma/client')
-const bcrypt = require('bcryptjs')
 
 const prisma = new PrismaClient()
 
@@ -41,35 +40,6 @@ async function seed() {
       })
     }
     console.log('✓ Subtype configs created')
-
-    // Create demo practitioner user
-    const salt = bcrypt.genSaltSync(10)
-    const hashedPassword = bcrypt.hashSync('demo1234', salt)
-
-    await prisma.user.upsert({
-      where: { email: 'demo@example.com' },
-      update: {},
-      create: {
-        email: 'demo@example.com',
-        name: 'Demo Practitioner',
-        passwordHash: hashedPassword,
-        role: 'PRACTITIONER',
-      },
-    })
-    console.log('✓ Demo user created (email: demo@example.com, password: demo1234)')
-
-    // Create demo admin user
-    await prisma.user.upsert({
-      where: { email: 'admin@example.com' },
-      update: {},
-      create: {
-        email: 'admin@example.com',
-        name: 'Admin',
-        passwordHash: hashedPassword,
-        role: 'ADMIN',
-      },
-    })
-    console.log('✓ Admin user created (email: admin@example.com, password: demo1234)')
 
     // Create placeholder items (empty content to be filled by admin)
     for (let i = 1; i <= 118; i++) {
@@ -166,9 +136,11 @@ async function seed() {
     console.log('✓ GAD-7 items created')
 
     console.log('\n✅ Seed complete!')
-    console.log('\nDemo Credentials:')
-    console.log('  Practitioner: demo@example.com / demo1234')
-    console.log('  Admin: admin@example.com / demo1234')
+    console.log('\nDatabase populated:')
+    console.log('  ✓ 16 Prakriti subtypes')
+    console.log('  ✓ 118 MPPI placeholder items')
+    console.log('  ✓ 7 GAD-7 items')
+    console.log('\nReady to populate item content via /admin/items')
   } catch (error) {
     console.error('Seed error:', error)
     process.exit(1)
