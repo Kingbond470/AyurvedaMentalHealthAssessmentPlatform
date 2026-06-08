@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import axios from 'axios'
 
 interface Item {
@@ -14,10 +15,10 @@ interface Item {
 }
 
 export default function ItemsManagementPage() {
+  const router = useRouter()
   const [items, setItems] = useState<Item[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('')
-  const [editingId, setEditingId] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchItems = async () => {
@@ -103,7 +104,7 @@ export default function ItemsManagementPage() {
                     </p>
                   </div>
                   <button
-                    onClick={() => setEditingId(item.id)}
+                    onClick={() => router.push(`/admin/items/${item.itemNumber}`)}
                     className="px-3 py-1 bg-bg-section text-text-primary text-sm font-ui rounded hover:bg-border-light transition"
                   >
                     Edit
