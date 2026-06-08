@@ -79,7 +79,7 @@ export default function ItemsManagementPage() {
           </div>
         ) : (
           <div className="space-y-3">
-            {filteredItems.slice(0, 20).map((item) => (
+            {filteredItems.map((item) => (
               <div
                 key={item.id}
                 className="bg-bg-surface rounded-lg p-4 border border-border-light hover:shadow-md transition"
@@ -115,9 +115,9 @@ export default function ItemsManagementPage() {
           </div>
         )}
 
-        {/* Pagination Info */}
+        {/* Items Count */}
         <div className="text-center mt-8 text-text-secondary font-ui text-sm">
-          Showing {Math.min(20, filteredItems.length)} of {filteredItems.length} items
+          Showing {filteredItems.length} of {items.length} items
         </div>
 
         {/* Help Text */}
