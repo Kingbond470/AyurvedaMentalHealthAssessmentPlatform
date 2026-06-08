@@ -53,6 +53,7 @@ async function importItems(itemsData) {
           where: { itemNumber: item.itemNumber },
           update: {
             section: item.section,
+            sectionName: item.sectionName || `Section ${item.section}`,
             predictorSanskrit: item.predictorSanskrit,
             predictorDevanagari: item.predictorDevanagari,
             interpretation: item.interpretation,
@@ -89,6 +90,7 @@ async function importItems(itemsData) {
           create: {
             itemNumber: item.itemNumber,
             section: item.section,
+            sectionName: item.sectionName || `Section ${item.section}`,
             predictorSanskrit: item.predictorSanskrit,
             predictorDevanagari: item.predictorDevanagari,
             interpretation: item.interpretation,
