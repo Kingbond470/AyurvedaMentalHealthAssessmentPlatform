@@ -26,11 +26,9 @@ export default function AssessmentPage() {
   useEffect(() => {
     const determinePhase = async () => {
       try {
-        const response = await axios.get(
+        await axios.get(
           `/api/sessions/${sessionId}`
         )
-
-        const session = response.data
 
         if (mppiOrder === 'AFTER_GAD7' && !isAssessmentPhaseGAD7) {
           setPhase('GAD7')
