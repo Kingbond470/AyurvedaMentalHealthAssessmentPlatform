@@ -1,11 +1,12 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import axios from 'axios'
 
 export default function EditItemPage() {
   const params = useParams()
+  const router = useRouter()
   const itemNumber = parseInt(params.id as string)
 
   const [item, setItem] = useState<any>(null)
