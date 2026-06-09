@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 const prisma = new PrismaClient()
 
 export async function GET(
-  req: NextRequest,
+  _: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {

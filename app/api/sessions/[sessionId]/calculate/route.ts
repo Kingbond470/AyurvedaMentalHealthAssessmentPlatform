@@ -3,13 +3,12 @@ import { PrismaClient } from '@prisma/client'
 import {
   calculateSubtypeScores,
   calculateGAD7Score,
-  PRAKRITI_CATEGORY,
 } from '@/lib/scoring'
 
 const prisma = new PrismaClient()
 
 export async function POST(
-  request: NextRequest,
+  _: NextRequest,
   { params }: { params: { sessionId: string } }
 ) {
   try {
@@ -36,9 +35,13 @@ export async function POST(
     )
 
     // Calculate GAD-7 scores
-    let gad7Result = {
+    let gad7Result: {
+      total: number
+      severity: 'MINIMAL' | 'MILD' | 'MODERATE' | 'SEVERE'
+      impairment: string
+    } = {
       total: 0,
-      severity: 'MINIMAL' as const,
+      severity: 'MINIMAL',
       impairment: 'Not difficult',
     }
 

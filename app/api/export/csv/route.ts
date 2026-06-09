@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
-export async function GET(request: NextRequest) {
+export async function GET(_: NextRequest) {
   try {
     const sessions = await prisma.session.findMany({
       include: {
