@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter, useParams } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import axios from 'axios'
 import Link from 'next/link'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
@@ -41,7 +41,6 @@ const GAD7_SEVERITY_COLORS = {
 }
 
 export default function ResultsPage() {
-  const router = useRouter()
   const params = useParams()
 
   const sessionId = params.sessionId as string
