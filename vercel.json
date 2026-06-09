@@ -1,12 +1,4 @@
 {
   "buildCommand": "next build",
-  "framework": "nextjs",
-  "deploymentProtection": {
-    "paths": [
-      {
-        "path": "/api/health",
-        "protection": "none"
-      }
-    ]
-  }
+  "framework": "nextjs"
 }
