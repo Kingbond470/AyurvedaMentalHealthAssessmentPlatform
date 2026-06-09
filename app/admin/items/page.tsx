@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import axios from 'axios'
 
 interface Item {
@@ -14,6 +15,7 @@ interface Item {
 }
 
 export default function ItemsManagementPage() {
+  const router = useRouter()
   const [items, setItems] = useState<Item[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('')

@@ -10,6 +10,7 @@ import GAD7Interface from '@/components/GAD7Interface'
 type Phase = 'MPPI' | 'GAD7' | 'COMPLETE'
 
 export default function AssessmentPage() {
+  const router = useRouter()
   const params = useParams()
   const {
     mppiOrder,

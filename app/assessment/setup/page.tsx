@@ -6,6 +6,7 @@ import { useSessionStore } from '@/lib/store'
 import axios from 'axios'
 
 export default function AssessmentSetupPage() {
+  const router = useRouter()
   const { setSessionId, setRespondentCode, setMppiOrder, setLanguage } =
     useSessionStore()
 
