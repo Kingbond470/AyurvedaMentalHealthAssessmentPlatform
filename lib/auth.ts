@@ -22,7 +22,7 @@ export function verifyPassword(password: string, hash: string): boolean {
 
 export function generateAccessToken(payload: TokenPayload): string {
   const options: SignOptions = {
-    expiresIn: JWT_EXPIRY,
+    expiresIn: JWT_EXPIRY as string,
     algorithm: 'HS256',
   }
   return jwt.sign(payload, JWT_SECRET as string, options)
@@ -30,7 +30,7 @@ export function generateAccessToken(payload: TokenPayload): string {
 
 export function generateRefreshToken(payload: TokenPayload): string {
   const options: SignOptions = {
-    expiresIn: REFRESH_TOKEN_EXPIRY,
+    expiresIn: REFRESH_TOKEN_EXPIRY as string,
     algorithm: 'HS256',
   }
   return jwt.sign(payload, JWT_SECRET as string, options)
