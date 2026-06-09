@@ -4,7 +4,8 @@
   "description": "Manas Prakriti & Anxiety Assessment Platform",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate --skip-engine-check || true && next build",
+    "postinstall": "prisma generate --skip-engine-check || true",
     "start": "next start",
     "lint": "next lint",
     "prisma:generate": "prisma generate",
