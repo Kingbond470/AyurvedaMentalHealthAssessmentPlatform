@@ -1,4 +1,4 @@
-import jwt, { SignOptions } from 'jsonwebtoken'
+import jwt from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-key'
@@ -21,19 +21,17 @@ export function verifyPassword(password: string, hash: string): boolean {
 }
 
 export function generateAccessToken(payload: TokenPayload): string {
-  const options: SignOptions = {
-    expiresIn: JWT_EXPIRY as string,
+  return jwt.sign(payload, JWT_SECRET as string, {
+    expiresIn: JWT_EXPIRY,
     algorithm: 'HS256',
-  }
-  return jwt.sign(payload, JWT_SECRET as string, options)
+  } as any)
 }
 
 export function generateRefreshToken(payload: TokenPayload): string {
-  const options: SignOptions = {
-    expiresIn: REFRESH_TOKEN_EXPIRY as string,
+  return jwt.sign(payload, JWT_SECRET as string, {
+    expiresIn: REFRESH_TOKEN_EXPIRY,
     algorithm: 'HS256',
-  }
-  return jwt.sign(payload, JWT_SECRET as string, options)
+  } as any)
 }
 
 export function verifyToken(token: string): TokenPayload | null {
