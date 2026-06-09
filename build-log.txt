@@ -1,0 +1,9 @@
+
+> manas-prakriti-platform@1.0.0 build
+> prisma generate && next build
+
+Prisma schema loaded from prisma\schema.prisma
+Error: 
+EPERM: operation not permitted, rename 'D:\Github_Project\AyurvedaMentalHealthAssessmentPlatform\node_modules\.prisma\client\query_engine-windows.dll.node.tmp23900' -> 'D:\Github_Project\AyurvedaMentalHealthAssessmentPlatform\node_modules\.prisma\client\query_engine-windows.dll.node'
+
+
