@@ -15,7 +15,6 @@ interface Item {
 }
 
 export default function ItemsManagementPage() {
-  const router = useRouter()
   const [items, setItems] = useState<Item[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('')

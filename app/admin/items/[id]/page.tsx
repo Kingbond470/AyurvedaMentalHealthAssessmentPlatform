@@ -6,7 +6,6 @@ import axios from 'axios'
 
 export default function EditItemPage() {
   const params = useParams()
-  const router = useRouter()
   const itemNumber = parseInt(params.id as string)
 
   const [item, setItem] = useState<any>(null)

@@ -1,8 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter, useParams } from 'next/navigation'
-import { useAuthStore } from '@/lib/store'
+import { useParams } from 'next/navigation'
 import axios from 'axios'
 import {
   Document,
@@ -12,7 +11,7 @@ import {
   StyleSheet,
   PDFDownloadLink,
 } from '@react-pdf/renderer'
-import { getPrakritiFullName, ALL_SUBTYPES, PRAKRITI_CATEGORY } from '@/lib/scoring'
+import { getPrakritiFullName, ALL_SUBTYPES } from '@/lib/scoring'
 
 interface SessionData {
   id: string
@@ -270,7 +269,6 @@ const ReportPDF = ({ session }: { session: SessionData }) => {
 }
 
 export default function ReportPage() {
-  const router = useRouter()
   const params = useParams()
 
   const sessionId = params.sessionId as string
