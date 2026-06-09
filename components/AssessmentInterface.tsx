@@ -78,9 +78,6 @@ export default function AssessmentInterface({ sessionId, onComplete }: Props) {
   const [probe3, setProbe3] = useState<number | null>(null)
   const [saving, setSaving] = useState(false)
 
-  const sectionRange = SECTION_ITEMS[currentSection]
-  const totalItemsInSection = sectionRange[1] - sectionRange[0] + 1
-  const itemInSectionIndex = currentItem - sectionRange[0] + 1
   const totalMppiItems = 118
   const progressPercent = (currentItem / totalMppiItems) * 100
 

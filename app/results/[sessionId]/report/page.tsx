@@ -314,12 +314,9 @@ export default function ReportPage() {
           <PDFDownloadLink
             document={<ReportPDF session={session} />}
             fileName={`MPAAP-Report-${session.respondent.respondentCode}-${new Date().toISOString().split('T')[0]}.pdf`}
+            className="inline-block px-8 py-3 bg-primary-500 text-white font-ui font-600 rounded-lg hover:bg-primary-600 transition"
           >
-            {({ loading: pdfLoading }) => (
-              <button className="inline-block px-8 py-3 bg-primary-500 text-white font-ui font-600 rounded-lg hover:bg-primary-600 transition">
-                {pdfLoading ? 'Preparing PDF...' : 'Download PDF Report'}
-              </button>
-            )}
+            Download PDF Report
           </PDFDownloadLink>
 
           <div className="mt-8">

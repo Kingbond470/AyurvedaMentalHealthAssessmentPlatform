@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useSessionStore } from '@/lib/store'
 import axios from 'axios'
 
@@ -41,7 +41,7 @@ export default function GAD7Interface({ sessionId, onComplete }: Props) {
   const [showImpairment, setShowImpairment] = useState(false)
 
   const currentItem = GAD7_ITEMS[currentItemIndex]
-  const currentScore = gad7Responses[`item${currentItemIndex + 1}`] as number | undefined
+  const currentScore = (gad7Responses as any)[`item${currentItemIndex + 1}`] as number | undefined
   const impairmentScore = gad7Responses.impairment as number | undefined
 
   const allItemsAnswered = Object.keys(gad7Responses).filter(
