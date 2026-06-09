@@ -64,10 +64,7 @@ export default function AssessmentPage() {
       // Trigger scoring calculation
       await axios.post(
         `/api/sessions/${sessionId}/calculate`,
-        {},
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        {}
       )
 
       // Redirect to results
