@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import prisma from '@/lib/prisma'
 
 export async function GET() {
   try {
@@ -13,7 +11,7 @@ export async function GET() {
   } catch (error) {
     console.error('GAD-7 items fetch error:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch GAD-7 items' },
+      { error: 'Failed to fetch GAD-7 items', details: String(error) },
       { status: 500 }
     )
   }
@@ -53,3 +51,4 @@ export async function POST(request: Request) {
     )
   }
 }
+

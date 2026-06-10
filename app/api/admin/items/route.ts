@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import prisma from '@/lib/prisma'
 
 export async function GET(_: NextRequest) {
   try {
-
     const items = await prisma.item.findMany({
       orderBy: { itemNumber: 'asc' },
     })
@@ -14,7 +11,7 @@ export async function GET(_: NextRequest) {
   } catch (error) {
     console.error('Items fetch error:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch items' },
+      { error: 'Failed to fetch items', details: String(error) },
       { status: 500 }
     )
   }
@@ -22,7 +19,6 @@ export async function GET(_: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-
     const body = await request.json()
     const item = await prisma.item.create({
       data: {
@@ -50,3 +46,4 @@ export async function POST(request: NextRequest) {
     )
   }
 }
+
