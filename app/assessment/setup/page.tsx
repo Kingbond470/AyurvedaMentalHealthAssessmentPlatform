@@ -14,7 +14,6 @@ export default function AssessmentSetupPage() {
 
   // Respondent Info
   const [practitionerName, setPractitionerName] = useState('')
-  const [respondentCode, setRespondentCodeLocal] = useState('')
   const [age, setAge] = useState('')
   const [gender, setGender] = useState('MALE')
   const [education, setEducation] = useState('')
@@ -36,11 +35,11 @@ export default function AssessmentSetupPage() {
     setLoading(true)
 
     try {
-      // Create respondent
+      // Create respondent with auto-generated code
       const respondentRes = await axios.post(
         '/api/respondents',
         {
-          respondentCode: respondentCode || `RESP-${Date.now()}`,
+          respondentCode: `RESP-${Date.now()}`,
           age: parseInt(age),
           gender,
           education,
@@ -127,19 +126,6 @@ export default function AssessmentSetupPage() {
                 <h3 className="text-sm font-ui font-600 text-text-primary mb-4">
                   Respondent Information
                 </h3>
-              </div>
-
-              <div>
-                <label className="block text-sm font-ui text-text-primary mb-1">
-                  Respondent Code (Optional)
-                </label>
-                <input
-                  type="text"
-                  value={respondentCode}
-                  onChange={(e) => setRespondentCodeLocal(e.target.value)}
-                  className="w-full px-4 py-2 border border-border-light rounded-lg font-body"
-                  placeholder="Auto-generated if blank"
-                />
               </div>
 
               <div>

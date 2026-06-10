@@ -86,12 +86,20 @@ Item (Question Bank)
   ├─ item_number (1-125: 118 MPPI + 7 GAD-7)
   ├─ section (1-16)
   ├─ predictor_sanskrit, predictor_devanagari
-  ├─ core_probe_en/hi/mr
-  ├─ probe1/2/3_question_en/hi/mr
-  ├─ probe1/2/3_score_0/1/2/3/4_en (interpretation labels)
+  ├─ core_probe_en/hi/mr (NULLABLE - fallback to EN)
+  ├─ probe1/2/3_question_en/hi/mr (NULLABLE - fallback to EN)
+  ├─ probe1/2/3_score_0/1/2/3/4_en/hi/mr (NULLABLE - fallback to EN)
   ├─ mapped_subtypes (string[]) [e.g., ["BRAMHA", "YAAMYA"]]
   ├─ is_observer_rated (Section 16 only)
   └─ section14_gender_variant (null | "male" | "female")
+
+Language Localization
+  ├─ All question fields (core_probe, probe*_question) nullable
+  ├─ All scoring labels (probe*_score_0/1/2/3/4) nullable
+  ├─ GAD-7 fields nullable
+  ├─ Missing translations fallback to EN silently
+  ├─ No feature gates - ship with EN complete, add HI/MR gradually
+  └─ Prakriti + GAD-7 labels stored in constants with EN fallback
 ```
 
 ### Why JSON for Scores?

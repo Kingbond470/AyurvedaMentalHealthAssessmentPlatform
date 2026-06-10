@@ -190,8 +190,9 @@ Secondary = second highest percentage
    - Resume incomplete sessions
 
 2. **Assessment Setup**
-   - Enter respondent demographics
-   - Auto-generate respondent code
+   - Enter mandatory respondent demographics (Name, Age, Gender, Education, Occupation, Phone, City, State)
+   - Auto-generate unique respondent code (no user input required)
+   - Select assessment language (EN/HI/MR) → applies to all questions + results
    - Assessment flow fixed: MPPI → GAD-7 (no selection)
 
 3. **Assessment Interface - MPPI (Items 1-118)**
