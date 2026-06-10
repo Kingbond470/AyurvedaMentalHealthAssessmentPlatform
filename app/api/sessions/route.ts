@@ -6,7 +6,7 @@ const prisma = new PrismaClient()
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { respondentCode, practitionerName, mppiOrder } = body
+    const { respondentCode, practitionerName } = body
 
     if (!respondentCode || !practitionerName) {
       return NextResponse.json(
@@ -31,7 +31,8 @@ export async function POST(request: NextRequest) {
         respondentId: respondent.id,
         practitionerName,
         status: 'IN_PROGRESS',
-        mppiOrder: mppiOrder || 'BEFORE_GAD7',
+        phase: 'MPPI',
+        currentItem: 1,
       },
     })
 
