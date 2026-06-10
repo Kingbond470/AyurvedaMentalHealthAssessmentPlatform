@@ -116,7 +116,7 @@ export default function AssessmentSetupPage() {
                   type="text"
                   value={practitionerName}
                   onChange={(e) => setPractitionerName(e.target.value)}
-                  className="w-full px-4 py-2 border border-border-light rounded-lg font-body"
+                  className="w-full px-4 py-2 border border-border-light rounded-lg font-body bg-[var(--bg-secondary)] text-[var(--text-primary)]"
                   placeholder="Your name"
                   required
                 />
@@ -136,7 +136,7 @@ export default function AssessmentSetupPage() {
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full px-4 py-2 border border-border-light rounded-lg font-body"
+                  className="w-full px-4 py-2 border border-border-light rounded-lg font-body bg-[var(--bg-secondary)] text-[var(--text-primary)]"
                 />
               </div>
 
@@ -148,7 +148,7 @@ export default function AssessmentSetupPage() {
                   type="number"
                   value={age}
                   onChange={(e) => setAge(e.target.value)}
-                  className="w-full px-4 py-2 border border-border-light rounded-lg font-body"
+                  className="w-full px-4 py-2 border border-border-light rounded-lg font-body bg-[var(--bg-secondary)] text-[var(--text-primary)]"
                   required
                 />
               </div>
@@ -180,7 +180,7 @@ export default function AssessmentSetupPage() {
                 <select
                   value={education}
                   onChange={(e) => setEducation(e.target.value)}
-                  className="w-full px-4 py-2 border border-border-light rounded-lg font-body"
+                  className="w-full px-4 py-2 border border-border-light rounded-lg font-body bg-[var(--bg-secondary)] text-[var(--text-primary)]"
                 >
                   <option value="">Select...</option>
                   <option value="Primary">Primary</option>
@@ -200,7 +200,7 @@ export default function AssessmentSetupPage() {
                   type="text"
                   value={occupation}
                   onChange={(e) => setOccupation(e.target.value)}
-                  className="w-full px-4 py-2 border border-border-light rounded-lg font-body"
+                  className="w-full px-4 py-2 border border-border-light rounded-lg font-body bg-[var(--bg-secondary)] text-[var(--text-primary)]"
                 />
               </div>
 
@@ -212,7 +212,7 @@ export default function AssessmentSetupPage() {
                   type="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="w-full px-4 py-2 border border-border-light rounded-lg font-body"
+                  className="w-full px-4 py-2 border border-border-light rounded-lg font-body bg-[var(--bg-secondary)] text-[var(--text-primary)]"
                 />
               </div>
 
@@ -224,7 +224,7 @@ export default function AssessmentSetupPage() {
                   type="text"
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
-                  className="w-full px-4 py-2 border border-border-light rounded-lg font-body"
+                  className="w-full px-4 py-2 border border-border-light rounded-lg font-body bg-[var(--bg-secondary)] text-[var(--text-primary)]"
                 />
               </div>
 
@@ -236,7 +236,7 @@ export default function AssessmentSetupPage() {
                   type="text"
                   value={state}
                   onChange={(e) => setState(e.target.value)}
-                  className="w-full px-4 py-2 border border-border-light rounded-lg font-body"
+                  className="w-full px-4 py-2 border border-border-light rounded-lg font-body bg-[var(--bg-secondary)] text-[var(--text-primary)]"
                 />
               </div>
 
@@ -248,7 +248,7 @@ export default function AssessmentSetupPage() {
                   type="text"
                   value={country}
                   onChange={(e) => setCountry(e.target.value)}
-                  className="w-full px-4 py-2 border border-border-light rounded-lg font-body"
+                  className="w-full px-4 py-2 border border-border-light rounded-lg font-body bg-[var(--bg-secondary)] text-[var(--text-primary)]"
                 />
               </div>
 
