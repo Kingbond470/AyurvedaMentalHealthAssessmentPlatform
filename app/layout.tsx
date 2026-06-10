@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import { ThemeProvider } from '@/components/ThemeProvider'
 
 export const metadata: Metadata = {
   title: 'Manas Prakriti & Anxiety Assessment Platform',
@@ -13,7 +14,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="font-body bg-bg-primary text-text-primary">{children}</body>
+      <body className="font-body bg-[var(--bg-primary)] text-[var(--text-primary)] transition-colors duration-200">
+        <ThemeProvider>{children}</ThemeProvider>
+      </body>
     </html>
   )
 }

@@ -36,6 +36,56 @@ button, input, select, textarea {
   font-family: 'Noto Sans Devanagari', sans-serif;
 }
 
+/* Premium Theme System - CSS Variables */
+:root {
+  /* Black + Gold (DEFAULT) */
+  --bg-primary: #0a0a0a;
+  --bg-secondary: #1a1a1a;
+  --bg-surface: #1a1a1a;
+  --bg-section: #2a2a2a;
+  --text-primary: #f5f5f5;
+  --text-secondary: #b0b0b0;
+  --text-tertiary: #808080;
+  --accent-primary: #d4a574;
+  --accent-secondary: #a87c3f;
+  --accent-hover: #c49560;
+  --border: #2a2a2a;
+  --border-light: #3a3a3a;
+  --primary-500: #d4a574;
+  --primary-600: #a87c3f;
+  --primary-light: #e6c9a0;
+}
+
+[data-theme="sapphire"] {
+  /* Dark + Deep Blue */
+  --accent-primary: #4a7bdc;
+  --accent-secondary: #2c5aa0;
+  --accent-hover: #5a8bec;
+  --primary-500: #4a7bdc;
+  --primary-600: #2c5aa0;
+  --primary-light: #7aa5f0;
+}
+
+[data-theme="emerald"] {
+  /* Dark + Forest Green */
+  --accent-primary: #3db366;
+  --accent-secondary: #2a8f4e;
+  --accent-hover: #4dbd7a;
+  --primary-500: #3db366;
+  --primary-600: #2a8f4e;
+  --primary-light: #6dc984;
+}
+
+[data-theme="charcoal"] {
+  /* Dark + Neutral Gray */
+  --accent-primary: #808080;
+  --accent-secondary: #606060;
+  --accent-hover: #909090;
+  --primary-500: #808080;
+  --primary-600: #606060;
+  --primary-light: #a0a0a0;
+}
+
 /* Utility classes */
 .container-content {
   max-width: 720px;
@@ -55,14 +105,14 @@ button, input, select, textarea {
 /* Progress bar */
 .progress-bar {
   height: 4px;
-  background-color: rgb(245, 242, 236);
+  background-color: var(--bg-section);
   border-radius: 9999px;
   overflow: hidden;
 }
 
 .progress-bar-fill {
   height: 100%;
-  background-color: rgb(61, 107, 79);
+  background-color: var(--primary-500);
   border-radius: 9999px;
   transition: width 400ms cubic-bezier(0.4, 0, 0.2, 1);
 }

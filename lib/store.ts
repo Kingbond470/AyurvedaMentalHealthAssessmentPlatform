@@ -124,3 +124,20 @@ export const useSessionStore = create<SessionState>()(
     }
   )
 )
+
+interface ThemeState {
+  theme: 'default' | 'sapphire' | 'emerald' | 'charcoal'
+  setTheme: (theme: ThemeState['theme']) => void
+}
+
+export const useThemeStore = create<ThemeState>()(
+  persist(
+    (set) => ({
+      theme: 'default',
+      setTheme: (theme) => set({ theme }),
+    }),
+    {
+      name: 'theme-store',
+    }
+  )
+)
