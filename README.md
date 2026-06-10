@@ -139,8 +139,10 @@ After seeding:
 
 **Session:** Single assessment instance
 - Links respondent + practitioner
-- Tracks MPPI order (before/after GAD-7)
+- Fixed sequence: MPPI (items 1-118) → GAD-7 (items 1-7) → Results
+- Tracks current section + item for progress
 - Auto-saves progress to localStorage + server
+- Status: IN_PROGRESS | COMPLETED | ABANDONED
 
 **ItemResponse:** Individual probe score (0-4)
 - 3 probes per item → max 12 per item
@@ -189,18 +191,29 @@ Secondary = second highest percentage
 
 2. **Assessment Setup**
    - Enter respondent demographics
-   - Select MPPI-first or GAD-7-first
    - Auto-generate respondent code
+   - Assessment flow fixed: MPPI → GAD-7 (no selection)
 
-3. **Assessment Interface**
+3. **Assessment Interface - MPPI (Items 1-118)**
    - One item at a time, full-screen
    - Core probe (read aloud, not scored)
    - 3 follow-up probes with 0-4 scoring chips
+   - **NO score display during assessment** (prevents response bias)
+   - Progress bar shows % complete (not numeric score)
    - Auto-save after each item
-   - Progress bar + section transitions
-   - Keyboard shortcuts (0-4 to score, arrow keys to navigate)
+   - Auto-advance to next item
+   - Section transitions visible
 
-4. **Results Page**
+4. **Assessment Interface - GAD-7 (Items 1-7 + Impairment)**
+   - One item at a time, full-screen
+   - 4-option cards: Not at all → Nearly every day
+   - **NO score display during assessment**
+   - Progress bar shows % complete
+   - Auto-save after each item
+   - Auto-advance after item 7 to impairment question
+
+5. **Results Page**
+   - **All scores now visible** (first time after completion)
    - Predominant Prakriti display (with Sattvika/Rajasika/Tamasika color)
    - Secondary Prakriti influence
    - Bar chart: all 16 subtypes ranked by percentage
