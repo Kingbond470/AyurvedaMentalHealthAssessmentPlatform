@@ -110,7 +110,7 @@ export default function MPPIItemsTab() {
                   setSelectedSection(e.target.value === '' ? null : parseInt(e.target.value))
                   setCurrentPage(1)
                 }}
-                className="w-full px-4 py-2 border border-border-light rounded-lg font-body focus:outline-none focus:border-primary-500"
+                className="w-full px-4 py-2 border border-border-light rounded-lg font-body focus:outline-none focus:border-primary-500 bg-[var(--bg-secondary)] text-[var(--text-primary)]"
               >
                 <option value="">All Sections</option>
                 {Array.from({ length: 16 }, (_, i) => i + 1).map((sec) => (
