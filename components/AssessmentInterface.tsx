@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSessionStore } from '@/lib/store'
+import { getLocalizedField, type Language } from '@/lib/localization'
 import axios from 'axios'
 
 interface ItemData {
@@ -14,9 +15,62 @@ interface ItemData {
   predictorDevanagari: string
   interpretation: string
   coreProbeEn?: string
+  coreProbeHi?: string
+  coreProbeMr?: string
   probe1QuestionEn?: string
+  probe1QuestionHi?: string
+  probe1QuestionMr?: string
+  probe1Score0En?: string
+  probe1Score1En?: string
+  probe1Score2En?: string
+  probe1Score3En?: string
+  probe1Score4En?: string
+  probe1Score0Hi?: string
+  probe1Score1Hi?: string
+  probe1Score2Hi?: string
+  probe1Score3Hi?: string
+  probe1Score4Hi?: string
+  probe1Score0Mr?: string
+  probe1Score1Mr?: string
+  probe1Score2Mr?: string
+  probe1Score3Mr?: string
+  probe1Score4Mr?: string
   probe2QuestionEn?: string
+  probe2QuestionHi?: string
+  probe2QuestionMr?: string
+  probe2Score0En?: string
+  probe2Score0Hi?: string
+  probe2Score0Mr?: string
+  probe2Score1En?: string
+  probe2Score1Hi?: string
+  probe2Score1Mr?: string
+  probe2Score2En?: string
+  probe2Score2Hi?: string
+  probe2Score2Mr?: string
+  probe2Score3En?: string
+  probe2Score3Hi?: string
+  probe2Score3Mr?: string
+  probe2Score4En?: string
+  probe2Score4Hi?: string
+  probe2Score4Mr?: string
   probe3QuestionEn?: string
+  probe3QuestionHi?: string
+  probe3QuestionMr?: string
+  probe3Score0En?: string
+  probe3Score0Hi?: string
+  probe3Score0Mr?: string
+  probe3Score1En?: string
+  probe3Score1Hi?: string
+  probe3Score1Mr?: string
+  probe3Score2En?: string
+  probe3Score2Hi?: string
+  probe3Score2Mr?: string
+  probe3Score3En?: string
+  probe3Score3Hi?: string
+  probe3Score3Mr?: string
+  probe3Score4En?: string
+  probe3Score4Hi?: string
+  probe3Score4Mr?: string
   isObserverRated: boolean
 }
 
@@ -71,6 +125,7 @@ export default function AssessmentInterface({ sessionId, onComplete }: Props) {
     setCurrentItem,
     setItemResponse,
     itemResponses,
+    language,
   } = useSessionStore()
 
   const [item, setItem] = useState<ItemData | null>(null)
@@ -230,16 +285,16 @@ export default function AssessmentInterface({ sessionId, onComplete }: Props) {
               Read to respondent (not scored)
             </div>
             <p className="font-body text-text-primary italic">
-              {item.coreProbeEn || 'Core probe question...'}
+              {getLocalizedField(item, 'coreProbe', language as Language) || 'Core probe question...'}
             </p>
           </div>
 
           {/* Follow-up Probes */}
           <div className="space-y-6">
             {[
-              { probe: 1, question: item.probe1QuestionEn, score: probe1, setter: setProbe1 },
-              { probe: 2, question: item.probe2QuestionEn, score: probe2, setter: setProbe2 },
-              { probe: 3, question: item.probe3QuestionEn, score: probe3, setter: setProbe3 },
+              { probe: 1, question: getLocalizedField(item, 'probe1Question', language as Language), score: probe1, setter: setProbe1 },
+              { probe: 2, question: getLocalizedField(item, 'probe2Question', language as Language), score: probe2, setter: setProbe2 },
+              { probe: 3, question: getLocalizedField(item, 'probe3Question', language as Language), score: probe3, setter: setProbe3 },
             ].map(({ probe, question, score, setter }) => (
               <div key={probe}>
                 <div className="mb-3">
@@ -252,20 +307,29 @@ export default function AssessmentInterface({ sessionId, onComplete }: Props) {
                 </div>
 
                 {/* Response Chips */}
-                <div className="flex gap-2">
-                  {[0, 1, 2, 3, 4].map((s) => (
-                    <button
-                      key={s}
-                      onClick={() => setter(s)}
-                      className={`w-12 h-12 rounded-md font-ui font-600 transition ${
-                        score === s
-                          ? 'bg-primary-500 text-white border-2 border-primary-500'
-                          : 'bg-bg-section border-2 border-border-light text-text-primary hover:border-primary-500'
-                      }`}
-                    >
-                      {s}
-                    </button>
-                  ))}
+                <div className="flex flex-col gap-3">
+                  {[0, 1, 2, 3, 4].map((s) => {
+                    const scoreLabel = getLocalizedField(
+                      item,
+                      `probe${probe}Score${s}`,
+                      language as Language
+                    )
+                    return (
+                      <button
+                        key={s}
+                        onClick={() => setter(s)}
+                        className={`px-4 py-3 rounded-md font-ui font-600 transition text-left ${
+                          score === s
+                            ? 'bg-primary-500 text-white border-2 border-primary-500'
+                            : 'bg-bg-section border-2 border-border-light text-text-primary hover:border-primary-500'
+                        }`}
+                        title={scoreLabel}
+                      >
+                        <span className="font-600">{s}</span>
+                        {scoreLabel && <span className="text-xs ms-2 opacity-80">{scoreLabel}</span>}
+                      </button>
+                    )
+                  })}
                 </div>
               </div>
             ))}

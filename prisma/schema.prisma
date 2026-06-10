@@ -167,28 +167,58 @@ model Item {
   probe1QuestionHi      String?
   probe1QuestionMr      String?
   probe1Score0En        String?
+  probe1Score0Hi        String?
+  probe1Score0Mr        String?
   probe1Score1En        String?
+  probe1Score1Hi        String?
+  probe1Score1Mr        String?
   probe1Score2En        String?
+  probe1Score2Hi        String?
+  probe1Score2Mr        String?
   probe1Score3En        String?
+  probe1Score3Hi        String?
+  probe1Score3Mr        String?
   probe1Score4En        String?
+  probe1Score4Hi        String?
+  probe1Score4Mr        String?
 
   probe2QuestionEn      String?
   probe2QuestionHi      String?
   probe2QuestionMr      String?
   probe2Score0En        String?
+  probe2Score0Hi        String?
+  probe2Score0Mr        String?
   probe2Score1En        String?
+  probe2Score1Hi        String?
+  probe2Score1Mr        String?
   probe2Score2En        String?
+  probe2Score2Hi        String?
+  probe2Score2Mr        String?
   probe2Score3En        String?
+  probe2Score3Hi        String?
+  probe2Score3Mr        String?
   probe2Score4En        String?
+  probe2Score4Hi        String?
+  probe2Score4Mr        String?
 
   probe3QuestionEn      String?
   probe3QuestionHi      String?
   probe3QuestionMr      String?
   probe3Score0En        String?
+  probe3Score0Hi        String?
+  probe3Score0Mr        String?
   probe3Score1En        String?
+  probe3Score1Hi        String?
+  probe3Score1Mr        String?
   probe3Score2En        String?
+  probe3Score2Hi        String?
+  probe3Score2Mr        String?
   probe3Score3En        String?
+  probe3Score3Hi        String?
+  probe3Score3Mr        String?
   probe3Score4En        String?
+  probe3Score4Hi        String?
+  probe3Score4Mr        String?
 
   mappedSubtypes        String[]  // ["BRAMHA", "YAAMYA"]
   isObserverRated       Boolean   @default(false)
@@ -207,27 +237,27 @@ model GAD7Item {
   itemNumber        Int       @unique
 
   questionEn        String
-  questionHi        String
-  questionMr        String
+  questionHi        String?   // Nullable - fallback to EN
+  questionMr        String?   // Nullable - fallback to EN
 
   option0En         String
-  option0Hi         String
-  option0Mr         String
+  option0Hi         String?   // Nullable - fallback to EN
+  option0Mr         String?   // Nullable - fallback to EN
   option0Score      Int       @default(0)
 
   option1En         String
-  option1Hi         String
-  option1Mr         String
+  option1Hi         String?   // Nullable - fallback to EN
+  option1Mr         String?   // Nullable - fallback to EN
   option1Score      Int       @default(1)
 
   option2En         String
-  option2Hi         String
-  option2Mr         String
+  option2Hi         String?   // Nullable - fallback to EN
+  option2Mr         String?   // Nullable - fallback to EN
   option2Score      Int       @default(2)
 
   option3En         String
-  option3Hi         String
-  option3Mr         String
+  option3Hi         String?   // Nullable - fallback to EN
+  option3Mr         String?   // Nullable - fallback to EN
   option3Score      Int       @default(3)
 
   isImpairmentItem  Boolean   @default(false)
