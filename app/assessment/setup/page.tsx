@@ -7,14 +7,12 @@ import axios from 'axios'
 
 export default function AssessmentSetupPage() {
   const router = useRouter()
-  const { setSessionId, setRespondentCode, setMppiOrder, setLanguage } =
-    useSessionStore()
+  const { setSessionId, setRespondentCode, setLanguage } = useSessionStore()
 
-  const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  // Step 1: Practitioner Info + Respondent Info
+  // Respondent Info
   const [practitionerName, setPractitionerName] = useState('')
   const [respondentCode, setRespondentCodeLocal] = useState('')
   const [age, setAge] = useState('')
@@ -28,24 +26,17 @@ export default function AssessmentSetupPage() {
   const [country, setCountry] = useState('')
   const [language, setLangSelection] = useState('EN')
 
-  // Step 2: Session Config
-  const [mppiOrder, setMppiOrderLocal] = useState('BEFORE_GAD7')
-
-  const handleStep1Submit = () => {
+  const handleSubmit = async () => {
     setError('')
     if (!practitionerName || !age || !gender) {
       setError('Practitioner name, age, and gender are required')
       return
     }
-    setStep(2)
-  }
 
-  const handleStep2Submit = async () => {
     setLoading(true)
-    setError('')
 
     try {
-      // Create respondent first
+      // Create respondent
       const respondentRes = await axios.post(
         '/api/respondents',
         {
@@ -65,13 +56,12 @@ export default function AssessmentSetupPage() {
 
       const respondent = respondentRes.data
 
-      // Create session
+      // Create session (fixed sequence: MPPI → GAD-7, no selection)
       const sessionRes = await axios.post(
         '/api/sessions',
         {
           respondentCode: respondent.respondentCode,
           practitionerName,
-          mppiOrder,
         }
       )
 
@@ -80,10 +70,9 @@ export default function AssessmentSetupPage() {
       // Update store
       setSessionId(session.id)
       setRespondentCode(respondent.respondentCode)
-      setMppiOrder(mppiOrder as 'BEFORE_GAD7' | 'AFTER_GAD7')
       setLanguage(language as 'EN' | 'HI' | 'MR')
 
-      // Redirect to assessment
+      // Redirect to assessment (always starts MPPI)
       router.push(`/assessment/${session.id}`)
     } catch (err: any) {
       setError(
@@ -102,7 +91,7 @@ export default function AssessmentSetupPage() {
             New Assessment
           </h1>
           <p className="text-sm text-text-secondary font-ui">
-            Step {step} of 2
+            Setup & Begin
           </p>
         </div>
       </header>
@@ -115,8 +104,7 @@ export default function AssessmentSetupPage() {
             </div>
           )}
 
-          {step === 1 && (
-            <div className="space-y-4">
+          <div className="space-y-4">
               <h2 className="text-xl font-display text-text-primary mb-6">
                 Assessment Setup
               </h2>
@@ -299,61 +287,13 @@ export default function AssessmentSetupPage() {
               </div>
 
               <button
-                onClick={handleStep1Submit}
-                className="w-full bg-primary-500 text-white font-ui font-600 py-2 rounded-lg hover:bg-primary-600 transition mt-6"
+                onClick={handleSubmit}
+                disabled={loading}
+                className="w-full bg-primary-500 text-white font-ui font-600 py-2 rounded-lg hover:bg-primary-600 transition disabled:opacity-50 mt-6"
               >
-                Next
+                {loading ? 'Starting...' : 'Begin Assessment'}
               </button>
             </div>
-          )}
-
-          {step === 2 && (
-            <div className="space-y-4">
-              <h2 className="text-xl font-display text-text-primary mb-6">
-                Assessment Configuration
-              </h2>
-
-              <div>
-                <label className="block text-sm font-ui text-text-primary mb-3">
-                  Which assessment first?
-                </label>
-                <div className="space-y-2">
-                  {[
-                    { value: 'BEFORE_GAD7', label: 'MPPI then GAD-7' },
-                    { value: 'AFTER_GAD7', label: 'GAD-7 then MPPI' },
-                  ].map((option) => (
-                    <label key={option.value} className="flex items-center gap-3">
-                      <input
-                        type="radio"
-                        name="mppiOrder"
-                        value={option.value}
-                        checked={mppiOrder === option.value}
-                        onChange={(e) => setMppiOrderLocal(e.target.value)}
-                        className="w-4 h-4"
-                      />
-                      <span className="font-ui">{option.label}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex gap-2 mt-6">
-                <button
-                  onClick={() => setStep(1)}
-                  className="flex-1 bg-bg-section text-text-primary font-ui font-600 py-2 rounded-lg hover:bg-border-light transition"
-                >
-                  Back
-                </button>
-                <button
-                  onClick={handleStep2Submit}
-                  disabled={loading}
-                  className="flex-1 bg-primary-500 text-white font-ui font-600 py-2 rounded-lg hover:bg-primary-600 transition disabled:opacity-50"
-                >
-                  {loading ? 'Starting...' : 'Begin Assessment'}
-                </button>
-              </div>
-            </div>
-          )}
         </div>
       </main>
     </div>

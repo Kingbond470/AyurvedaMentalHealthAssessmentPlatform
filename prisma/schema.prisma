@@ -46,14 +46,14 @@ model Session {
   practitionerName String   // Name of practitioner (no auth)
 
   status          SessionStatus @default(IN_PROGRESS)
-  mppiOrder       MPPIOrder     @default(BEFORE_GAD7)
+  phase           AssessmentPhase @default(MPPI)  // Track current phase
 
   startedAt       DateTime   @default(now())
   completedAt     DateTime?
   lastActivityAt  DateTime   @default(now())
 
   currentSection  Int        @default(1)
-  currentItem     Int        @default(1)
+  currentItem     Int        @default(1)  // 1-118 for MPPI, 1-7 for GAD-7
 
   itemResponses   ItemResponse[]
   gad7Response    GAD7Response?
@@ -64,6 +64,7 @@ model Session {
 
   @@index([respondentId])
   @@index([status])
+  @@index([phase])
 }
 
 enum SessionStatus {
@@ -72,9 +73,10 @@ enum SessionStatus {
   ABANDONED
 }
 
-enum MPPIOrder {
-  BEFORE_GAD7
-  AFTER_GAD7
+enum AssessmentPhase {
+  MPPI
+  GAD7
+  RESULTS
 }
 
 model ItemResponse {
