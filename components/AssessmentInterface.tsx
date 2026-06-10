@@ -245,7 +245,7 @@ export default function AssessmentInterface({ sessionId, onComplete }: Props) {
                   </p>
                 </div>
 
-                {/* Score Chips */}
+                {/* Response Chips */}
                 <div className="flex gap-2">
                   {[0, 1, 2, 3, 4].map((s) => (
                     <button
@@ -261,26 +261,8 @@ export default function AssessmentInterface({ sessionId, onComplete }: Props) {
                     </button>
                   ))}
                 </div>
-
-                {score !== null && (
-                  <div className="text-xs text-text-tertiary font-ui mt-2">
-                    Score: {score} / 4
-                  </div>
-                )}
               </div>
             ))}
-          </div>
-
-          {/* Item Total */}
-          <div className="mt-8 p-4 bg-bg-section rounded-lg">
-            <div className="text-center">
-              <span className="text-sm font-ui text-text-secondary">Item Score</span>
-              <div className="text-3xl font-display text-text-primary mt-1">
-                {probe1 !== null && probe2 !== null && probe3 !== null
-                  ? `${probe1 + probe2 + probe3} / 12`
-                  : '— / 12'}
-              </div>
-            </div>
           </div>
 
           {/* Navigation */}

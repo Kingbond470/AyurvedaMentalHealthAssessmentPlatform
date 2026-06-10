@@ -7,24 +7,35 @@ This file documents key architectural decisions, data structures, and developmen
 ### Assessment Flow
 
 1. **Respondent Registration** → Create respondent record (demographics)
-2. **Session Start** → Create session (links respondent + practitioner + mppi_order)
-3. **Assessment Phase 1** → MPPI or GAD-7 (depends on selected order)
+2. **Session Start** → Create session (links respondent + practitioner)
+3. **Assessment Phase 1: MPPI** → Manas Prakriti Personality Inventory
+   - 118 items across 16 sections (60-90 min duration)
    - 1-item-at-a-time interface
+   - 3 follow-up probes per item (0-4 scoring, no live score display)
    - Auto-save after each item to `ItemResponse` table
    - Store locally in Zustand + localStorage for offline resilience
-4. **Assessment Phase 2** → GAD-7 or MPPI
+   - Progress bar shows % completion (not score)
+4. **Assessment Phase 2: GAD-7** → General Anxiety Disorder Assessment
+   - 7 items + 1 impairment question (2-3 min duration)
+   - Single question with 4-option cards (0-3 scoring, no live score display)
+   - Auto-save each response
 5. **Completion & Scoring** → POST `/api/sessions/[id]/calculate`
-   - Triggers scoring engine
-   - Creates `SessionResult` record
+   - Triggers scoring engine (MPPI 16 subtypes + GAD-7 severity)
+   - Creates `SessionResult` record with computed percentages
    - Marks session as COMPLETED
-6. **Results Display** → Show Prakriti + GAD-7 results
-7. **PDF Export** → @react-pdf/renderer generates report
+6. **Results Display** → Show final Prakriti + GAD-7 results
+   - Predominant & secondary subtypes with percentages
+   - GAD-7 total score & severity classification
+   - Bar chart of all 16 subtype percentages
+7. **PDF Export** → @react-pdf/renderer generates report with all scores
 
 ### Why This Design
 
-- **One item at a time:** Avoids overwhelming practitioners/respondents. Maintains focus during 60-90 min MPPI.
+- **Fixed sequence (MPPI → GAD-7):** No selection friction. Clear UX flow.
+- **One item at a time:** Avoids overwhelming practitioners/respondents. Maintains focus.
+- **No live scores:** Prevents response bias & anxiety. Pure assessment data. Scores shown only at end.
 - **Auto-save:** Network resilience (localStorage fallback). No lost data if browser closes.
-- **Dual scoring:** MPPI (16 subtypes, complex mapping) + GAD-7 (simple 0-21).
+- **Dual scoring:** MPPI (16 subtypes, complex mapping) + GAD-7 (simple 0-21 severity).
 - **Google Sheets:** Org-wide append-only. No risk of overwriting. Easy data aggregation.
 
 ## Data Model
