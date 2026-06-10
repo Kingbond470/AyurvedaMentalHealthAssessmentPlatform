@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useSessionStore } from '@/lib/store'
 import axios from 'axios'
 
@@ -34,6 +35,7 @@ interface Props {
 }
 
 export default function GAD7Interface({ sessionId, onComplete }: Props) {
+  const router = useRouter()
   const { gad7Responses, setGAD7Response, setGAD7Impairment } = useSessionStore()
 
   const [currentItemIndex, setCurrentItemIndex] = useState(0)
@@ -71,7 +73,7 @@ export default function GAD7Interface({ sessionId, onComplete }: Props) {
         gad7Responses.item7 || 0,
       ]
 
-      await axios.put(
+      const response = await axios.put(
         `/api/sessions/${sessionId}/gad7`,
         {
           item1Score: scores[0],
@@ -85,7 +87,12 @@ export default function GAD7Interface({ sessionId, onComplete }: Props) {
         }
       )
 
-      onComplete()
+      // Auto-redirect to results if scoring was triggered
+      if (response.data.autoScored && response.data.redirectTo) {
+        router.push(response.data.redirectTo)
+      } else {
+        onComplete()
+      }
     } catch (error) {
       console.error('Failed to save GAD-7:', error)
     } finally {

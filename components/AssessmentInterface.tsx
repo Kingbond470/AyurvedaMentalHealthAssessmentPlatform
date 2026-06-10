@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useSessionStore } from '@/lib/store'
 import axios from 'axios'
 
@@ -63,6 +64,7 @@ interface Props {
 }
 
 export default function AssessmentInterface({ sessionId, onComplete }: Props) {
+  const router = useRouter()
   const {
     currentSection,
     currentItem,
@@ -129,7 +131,7 @@ export default function AssessmentInterface({ sessionId, onComplete }: Props) {
     setSaving(true)
     try {
       // Save response
-      await axios.put(
+      const response = await axios.put(
         `/api/sessions/${sessionId}/items/${item.itemNumber}`,
         {
           itemNumber: item.itemNumber,
@@ -142,8 +144,12 @@ export default function AssessmentInterface({ sessionId, onComplete }: Props) {
       // Update store
       setItemResponse(item.itemNumber, probe1!, probe2!, probe3!)
 
-      // Move to next item
-      if (currentItem < totalMppiItems) {
+      // Check for phase transition (MPPI complete → GAD-7)
+      if (response.data.phaseTransition === 'GAD7') {
+        // Auto-redirect to GAD-7
+        router.push(`/assessment/${sessionId}/gad7`)
+      } else if (currentItem < totalMppiItems) {
+        // Move to next MPPI item
         setCurrentItem(currentSection, currentItem + 1)
       } else {
         // Assessment complete
