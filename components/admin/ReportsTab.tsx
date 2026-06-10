@@ -32,25 +32,6 @@ const GAD7_SEVERITY_COLORS = {
   SEVERE: '#B03A3A',
 }
 
-const PRAKRITI_COLORS = [
-  '#3D6B4F',
-  '#8B5A2B',
-  '#5A5A7A',
-  '#2D6A4F',
-  '#C46B3A',
-  '#8B7355',
-  '#5A7A6A',
-  '#6A5A3D',
-  '#7A4A5A',
-  '#4A5A7A',
-  '#5A6A3D',
-  '#6A3D5A',
-  '#3D5A6A',
-  '#7A6A4A',
-  '#4A6A5A',
-  '#6A4A3D',
-]
-
 export default function ReportsTab() {
   const [stats, setStats] = useState<Stats | null>(null)
   const [loading, setLoading] = useState(true)
