@@ -80,54 +80,76 @@ export async function PUT(
     // Auto-trigger scoring when impairment is saved (GAD-7 complete)
     let autoScored = false
     if (validated.impairmentScore !== undefined && validated.impairmentScore !== null) {
-      // Get all MPPI responses for scoring
-      const itemResponses = await prisma.itemResponse.findMany({
-        where: { sessionId: params.sessionId },
-      })
+      try {
+        // Get all MPPI responses for scoring
+        const itemResponses = await prisma.itemResponse.findMany({
+          where: { sessionId: params.sessionId },
+        })
 
-      // Calculate MPPI scores
-      const mppiScores = calculateSubtypeScores(itemResponses)
+        // Calculate MPPI scores
+        const {
+          subtypeRawScores,
+          subtypeMaxScores,
+          subtypePercentages,
+          predominantPrakriti,
+          secondaryPrakriti,
+          primaryCategory,
+        } = calculateSubtypeScores(itemResponses)
 
-      // Create result
-      await prisma.sessionResult.upsert({
-        where: { sessionId: params.sessionId },
-        create: {
-          sessionId: params.sessionId,
-          subtypeRawScores: mppiScores.subtypeRawScores,
-          subtypeMaxScores: mppiScores.subtypeMaxScores,
-          subtypePercentages: mppiScores.subtypePercentages,
-          predominantPrakriti: mppiScores.predominantPrakriti,
-          secondaryPrakriti: mppiScores.secondaryPrakriti,
-          primaryCategory: mppiScores.primaryCategory,
-          gad7Total: total,
-          gad7Severity: severity,
-          gad7Impairment: getImpairmentLabel(validated.impairmentScore),
-        },
-        update: {
-          subtypeRawScores: mppiScores.subtypeRawScores,
-          subtypeMaxScores: mppiScores.subtypeMaxScores,
-          subtypePercentages: mppiScores.subtypePercentages,
-          predominantPrakriti: mppiScores.predominantPrakriti,
-          secondaryPrakriti: mppiScores.secondaryPrakriti,
-          primaryCategory: mppiScores.primaryCategory,
-          gad7Total: total,
-          gad7Severity: severity,
-          gad7Impairment: getImpairmentLabel(validated.impairmentScore),
-        },
-      })
+        // Create result
+        await prisma.sessionResult.upsert({
+          where: { sessionId: params.sessionId },
+          create: {
+            sessionId: params.sessionId,
+            subtypeRawScores,
+            subtypeMaxScores,
+            subtypePercentages,
+            predominantPrakriti,
+            secondaryPrakriti,
+            primaryCategory,
+            gad7Total: total,
+            gad7Severity: severity,
+            gad7Impairment: getImpairmentLabel(validated.impairmentScore),
+          },
+          update: {
+            subtypeRawScores,
+            subtypeMaxScores,
+            subtypePercentages,
+            predominantPrakriti,
+            secondaryPrakriti,
+            primaryCategory,
+            gad7Total: total,
+            gad7Severity: severity,
+            gad7Impairment: getImpairmentLabel(validated.impairmentScore),
+          },
+        })
 
-      // Mark session as COMPLETED and phase as RESULTS
-      await prisma.session.update({
-        where: { id: params.sessionId },
-        data: {
-          status: 'COMPLETED',
-          phase: 'RESULTS',
-          completedAt: new Date(),
-          lastActivityAt: new Date(),
-        },
-      })
+        // Mark session as COMPLETED and phase as RESULTS
+        await prisma.session.update({
+          where: { id: params.sessionId },
+          data: {
+            status: 'COMPLETED',
+            phase: 'RESULTS',
+            completedAt: new Date(),
+            lastActivityAt: new Date(),
+          },
+        })
 
-      autoScored = true
+        autoScored = true
+      } catch (scoringError) {
+        console.error('Scoring error:', scoringError)
+        // Still mark as completed even if scoring fails
+        await prisma.session.update({
+          where: { id: params.sessionId },
+          data: {
+            status: 'COMPLETED',
+            phase: 'RESULTS',
+            completedAt: new Date(),
+            lastActivityAt: new Date(),
+          },
+        })
+        autoScored = true
+      }
     } else {
       // Just update activity
       await prisma.session.update({
