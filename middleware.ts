@@ -3,8 +3,8 @@ import { NextRequest, NextResponse } from 'next/server'
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Protect /admin/* routes
-  if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
+  // Only protect UI routes, not API routes
+  if (pathname.startsWith('/admin') && !pathname.startsWith('/api/admin') && pathname !== '/admin/login') {
     const adminSession = request.cookies.get('admin_session')
 
     if (!adminSession?.value) {
@@ -16,5 +16,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*'],
+  matcher: ['/admin/:path*', '/api/admin/:path*'],
 }
