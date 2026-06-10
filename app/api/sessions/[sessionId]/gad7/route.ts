@@ -1,9 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
 import { gad7ResponseSchema } from '@/lib/schemas'
-import { calculateGAD7Score } from '@/lib/scoring'
+import { calculateGAD7Score, calculateSubtypeScores } from '@/lib/scoring'
 
 const prisma = new PrismaClient()
+
+function getImpairmentLabel(score: number): string {
+  switch (score) {
+    case 0:
+      return 'Not difficult at all'
+    case 1:
+      return 'Somewhat difficult'
+    case 2:
+      return 'Very difficult'
+    case 3:
+      return 'Extremely difficult'
+    default:
+      return 'Unknown'
+  }
+}
 
 export async function PUT(
   request: NextRequest,
@@ -62,12 +77,73 @@ export async function PUT(
       },
     })
 
-    await prisma.session.update({
-      where: { id: params.sessionId },
-      data: { lastActivityAt: new Date() },
-    })
+    // Auto-trigger scoring when impairment is saved (GAD-7 complete)
+    let autoScored = false
+    if (validated.impairmentScore !== undefined && validated.impairmentScore !== null) {
+      // Get all MPPI responses for scoring
+      const itemResponses = await prisma.itemResponse.findMany({
+        where: { sessionId: params.sessionId },
+      })
 
-    return NextResponse.json(gad7Response, { status: 200 })
+      // Calculate MPPI scores
+      const mppiScores = calculateSubtypeScores(itemResponses)
+
+      // Create result
+      await prisma.sessionResult.upsert({
+        where: { sessionId: params.sessionId },
+        create: {
+          sessionId: params.sessionId,
+          subtypeRawScores: mppiScores.subtypeRawScores,
+          subtypeMaxScores: mppiScores.subtypeMaxScores,
+          subtypePercentages: mppiScores.subtypePercentages,
+          predominantPrakriti: mppiScores.predominantPrakriti,
+          secondaryPrakriti: mppiScores.secondaryPrakriti,
+          primaryCategory: mppiScores.primaryCategory,
+          gad7Total: total,
+          gad7Severity: severity,
+          gad7Impairment: getImpairmentLabel(validated.impairmentScore),
+        },
+        update: {
+          subtypeRawScores: mppiScores.subtypeRawScores,
+          subtypeMaxScores: mppiScores.subtypeMaxScores,
+          subtypePercentages: mppiScores.subtypePercentages,
+          predominantPrakriti: mppiScores.predominantPrakriti,
+          secondaryPrakriti: mppiScores.secondaryPrakriti,
+          primaryCategory: mppiScores.primaryCategory,
+          gad7Total: total,
+          gad7Severity: severity,
+          gad7Impairment: getImpairmentLabel(validated.impairmentScore),
+        },
+      })
+
+      // Mark session as COMPLETED and phase as RESULTS
+      await prisma.session.update({
+        where: { id: params.sessionId },
+        data: {
+          status: 'COMPLETED',
+          phase: 'RESULTS',
+          completedAt: new Date(),
+          lastActivityAt: new Date(),
+        },
+      })
+
+      autoScored = true
+    } else {
+      // Just update activity
+      await prisma.session.update({
+        where: { id: params.sessionId },
+        data: { lastActivityAt: new Date() },
+      })
+    }
+
+    return NextResponse.json(
+      {
+        gad7Response,
+        autoScored,
+        redirectTo: autoScored ? `/results/${params.sessionId}` : null,
+      },
+      { status: 200 }
+    )
   } catch (error) {
     console.error('GAD-7 response error:', error)
     return NextResponse.json(

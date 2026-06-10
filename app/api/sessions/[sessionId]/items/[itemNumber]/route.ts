@@ -55,13 +55,37 @@ export async function PUT(
       },
     })
 
-    // Update session activity
-    await prisma.session.update({
-      where: { id: params.sessionId },
-      data: { lastActivityAt: new Date() },
-    })
+    // Check if MPPI complete (item 118 is last MPPI item)
+    let phaseTransition = null
+    if (validated.itemNumber === 118) {
+      // Auto-transition to GAD-7
+      await prisma.session.update({
+        where: { id: params.sessionId },
+        data: {
+          phase: 'GAD7',
+          currentItem: 0,
+          lastActivityAt: new Date(),
+        },
+      })
+      phaseTransition = 'GAD7'
+    } else {
+      // Normal item progression
+      await prisma.session.update({
+        where: { id: params.sessionId },
+        data: {
+          currentItem: validated.itemNumber + 1,
+          lastActivityAt: new Date(),
+        },
+      })
+    }
 
-    return NextResponse.json(itemResponse, { status: 200 })
+    return NextResponse.json(
+      {
+        itemResponse,
+        phaseTransition,
+      },
+      { status: 200 }
+    )
   } catch (error) {
     console.error('Item response error:', error)
     return NextResponse.json(
