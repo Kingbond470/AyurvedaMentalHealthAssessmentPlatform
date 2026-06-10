@@ -34,7 +34,7 @@ export default function GAD7Tab() {
       try {
         setLoading(true)
         const response = await axios.get('/api/admin/gad7-items')
-        setItems(response.data.items || [])
+        setItems(response.data || [])
       } catch (error) {
         console.error('Failed to fetch GAD-7 items:', error)
       } finally {

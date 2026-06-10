@@ -31,7 +31,7 @@ export default function MPPIItemsTab() {
         setLoading(true)
         const response = await axios.get('/api/admin/items')
         // Filter to MPPI items only (1-118)
-        const mppiItems = response.data.items.filter((item: Item) => item.itemNumber <= 118)
+        const mppiItems = response.data.filter((item: Item) => item.itemNumber <= 118)
         setItems(mppiItems.sort((a: Item, b: Item) => a.itemNumber - b.itemNumber))
       } catch (error) {
         console.error('Failed to fetch items:', error)
