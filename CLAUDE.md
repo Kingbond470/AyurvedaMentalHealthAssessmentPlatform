@@ -339,6 +339,47 @@ UI: DM Sans (buttons, labels)
 Devanagari: Noto Sans Devanagari (Hindi/Marathi questions)
 ```
 
+## Premium Theme System (V2)
+
+### Architecture
+
+**CSS Variables + Zustand Storage**
+- Variables stored in `app/globals.css`
+- Zustand `useThemeStore()` manages theme state + localStorage persistence
+- `<ThemeProvider>` wraps root layout, applies `data-theme` attr on change
+- Theme toggle button in header (all pages)
+
+### Color Variants
+
+1. **Default (Black + Gold)** - Primary theme
+   - BG: #0a0a0a, Text: #f5f5f5, Accent: #d4a574
+   
+2. **Sapphire** - Deep blue variant
+   - Accent: #4a7bdc
+   
+3. **Emerald** - Forest green variant  
+   - Accent: #3db366
+   
+4. **Charcoal** - Neutral gray variant
+   - Accent: #808080
+
+### Implementation Details
+
+See `THEME_SYSTEM.md` for:
+- Full CSS variable definitions
+- Component update patterns
+- Tailwind config integration
+- Testing checklist
+- Rollout roadmap (Phase 1-4, ~8 days)
+
+### Status
+
+🚧 **Phase 1 (Infrastructure)** - In Progress
+- [ ] CSS variables in globals.css
+- [ ] ThemeProvider component
+- [ ] useThemeStore Zustand hook
+- [ ] ThemeToggle button
+
 ## Known Limitations & TODOs
 
 ### Current (V1)

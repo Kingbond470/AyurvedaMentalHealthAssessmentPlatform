@@ -24,6 +24,7 @@ Research-grade clinical assessment tool combining Ayurvedic constitutional analy
 - **State:** Zustand (localStorage-synced)
 - **Integrations:** Google Sheets API
 - **Deployment:** Vercel (or self-hosted)
+- **Theme System:** Premium dark theme + 3 color variants (CSS variables + Zustand)
 
 ## Quick Start
 
@@ -251,6 +252,22 @@ Secondary = second highest percentage
 4. **Data Export**
    - CSV download of all sessions (anonymized or with demographics)
    - Stats: Prakriti distribution, GAD-7 severity breakdown
+
+## Premium Theme System
+
+**Design:** Premium black theme with 3 color variants (Gold, Sapphire, Emerald)
+- Default: Black background (#0a0a0a) + warm white text
+- User-switchable: Theme toggle available on all pages
+- Persistent: Theme preference saved to localStorage
+- Global: Applied across login, assessment, results, dashboard, and admin pages
+
+**Color Variants:**
+- **Default (Black Gold):** Dark background + amber accents
+- **Sapphire:** Dark background + deep blue accents  
+- **Emerald:** Dark background + green accents
+- **Charcoal:** Dark background + neutral gray accents
+
+**Technical:** CSS variables + Zustand store, no performance impact, WCAG AA compliant
 
 ## Google Sheets Integration
 
