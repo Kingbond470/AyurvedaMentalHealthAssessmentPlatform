@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSessionStore } from '@/lib/store'
+import { getLocalizedField, getLocalizedLabel, type Language } from '@/lib/localization'
+import { IMPAIRMENT_LABELS } from '@/lib/constants/prakriti'
 import axios from 'axios'
 
 const GAD7_ITEMS = [
@@ -36,7 +38,7 @@ interface Props {
 
 export default function GAD7Interface({ sessionId, onComplete }: Props) {
   const router = useRouter()
-  const { gad7Responses, setGAD7Response, setGAD7Impairment } = useSessionStore()
+  const { gad7Responses, setGAD7Response, setGAD7Impairment, language } = useSessionStore()
 
   const [currentItemIndex, setCurrentItemIndex] = useState(0)
   const [saving, setSaving] = useState(false)
@@ -146,7 +148,13 @@ export default function GAD7Interface({ sessionId, onComplete }: Props) {
 
           {/* Options */}
           <div className="space-y-3">
-            {(showImpairment ? IMPAIRMENT_OPTIONS : GAD7_OPTIONS).map((option) => (
+            {(showImpairment
+              ? IMPAIRMENT_OPTIONS.map((opt) => ({
+                  ...opt,
+                  label: IMPAIRMENT_LABELS[language as Language]?.[opt.value] || opt.label,
+                }))
+              : GAD7_OPTIONS
+            ).map((option) => (
               <button
                 key={option.value}
                 onClick={() => {
