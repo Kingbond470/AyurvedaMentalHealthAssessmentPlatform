@@ -122,7 +122,7 @@ export function getLocalizedName(
   language: Language,
   category: 'prakriti' | 'severity' | 'category'
 ): string {
-  let dict: Record<string, string> | Record<number, string> | undefined
+  let dict: Record<string, string> | undefined
 
   switch (category) {
     case 'prakriti':
@@ -141,5 +141,5 @@ export function getLocalizedName(
     dict = category === 'prakriti' ? PRAKRITI_NAMES['EN'] : category === 'severity' ? GAD7_SEVERITY['EN'] : PRAKRITI_CATEGORIES['EN']
   }
 
-  return dict[name] || dict[PRAKRITI_NAMES['EN'][name]] || name
+  return (dict && dict[name]) || name
 }
