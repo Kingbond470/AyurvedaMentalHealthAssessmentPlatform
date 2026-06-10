@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
+import { useSessionStore } from '@/lib/store'
 import axios from 'axios'
 import Link from 'next/link'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 import { ALL_SUBTYPES, getPrakritiFullName, PRAKRITI_CATEGORY } from '@/lib/scoring'
+import { getLocalizedName, type Language } from '@/lib/constants/prakriti'
 
 interface SessionData {
   id: string
@@ -42,6 +44,7 @@ const GAD7_SEVERITY_COLORS = {
 
 export default function ResultsPage() {
   const params = useParams()
+  const { language } = useSessionStore()
 
   const sessionId = params.sessionId as string
   const [session, setSession] = useState<SessionData | null>(null)
@@ -87,14 +90,11 @@ export default function ResultsPage() {
     category: PRAKRITI_CATEGORY[subtype] || 'UNKNOWN',
   })).sort((a, b) => b.value - a.value)
 
-  const severityLabel =
-    session.result.gad7Severity === 'MINIMAL'
-      ? 'Minimal Anxiety'
-      : session.result.gad7Severity === 'MILD'
-        ? 'Mild Anxiety'
-        : session.result.gad7Severity === 'MODERATE'
-          ? 'Moderate Anxiety'
-          : 'Severe Anxiety'
+  const severityLabel = getLocalizedName(
+    session.result.gad7Severity,
+    language as Language,
+    'severity'
+  )
 
   return (
     <div className="min-h-screen bg-bg-primary">
@@ -128,10 +128,18 @@ export default function ResultsPage() {
                 }}
               >
                 <div className="text-3xl font-display text-text-primary">
-                  {getPrakritiFullName(session.result.predominantPrakriti)}
+                  {getLocalizedName(
+                    session.result.predominantPrakriti,
+                    language as Language,
+                    'prakriti'
+                  )}
                 </div>
                 <div className="text-sm font-ui text-text-secondary mt-1">
-                  {session.result.primaryCategory} Category
+                  {getLocalizedName(
+                    session.result.primaryCategory,
+                    language as Language,
+                    'category'
+                  )}
                 </div>
                 <div className="text-sm font-ui text-text-secondary mt-2">
                   Percentage Score:{' '}
