@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSessionStore } from '@/lib/store'
-import { getLocalizedField, getLocalizedLabel, type Language } from '@/lib/localization'
+import type { Language } from '@/lib/localization'
 import { IMPAIRMENT_LABELS } from '@/lib/constants/prakriti'
 import axios from 'axios'
 
