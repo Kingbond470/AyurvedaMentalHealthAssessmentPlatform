@@ -73,7 +73,6 @@ export default function GAD7Tab() {
         {items.map((item) => {
           const isExpanded = expandedItem === item.itemNumber
           const qStatus = getLanguageStatus(item.questionEn, item.questionHi, item.questionMr)
-          const oStatus = getLanguageStatus(item.option0En, item.option0Hi, item.option0Mr)
 
           return (
             <div

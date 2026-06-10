@@ -7,7 +7,8 @@ import axios from 'axios'
 import Link from 'next/link'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 import { ALL_SUBTYPES, getPrakritiFullName, PRAKRITI_CATEGORY } from '@/lib/scoring'
-import { getLocalizedName, type Language } from '@/lib/constants/prakriti'
+import { getLocalizedName } from '@/lib/constants/prakriti'
+import type { Language } from '@/lib/localization'
 
 interface SessionData {
   id: string
