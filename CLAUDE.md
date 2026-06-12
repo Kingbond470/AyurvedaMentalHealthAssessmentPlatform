@@ -188,41 +188,45 @@ POST /api/admin/auth/logout
 
 ## Database Access Pattern
 
-### Supabase REST API (Current - Production)
+### Supabase-Native Architecture (Production)
 
-**Why REST API instead of direct PostgreSQL?**
-- Vercel serverless cannot maintain long-lived database connections (port 5432/6543 unreachable)
-- REST API avoids connection pooling overhead
-- @supabase/supabase-js provides built-in error handling + retries
-- Scales effortlessly (no connection limit concerns)
+**All routes use Supabase REST API via @supabase/supabase-js**
+- Vercel serverless cannot maintain TCP connections to PostgreSQL (ports 5432/6543)
+- REST API provides built-in error handling, retries, rate limiting
+- Zero connection pooling overhead
+- Scales to 10k+ concurrent requests
 
-**Implementation:**
+**Prisma Removed (v1.1.0+):**
+- Deleted `/prisma` directory, `lib/prisma.ts`, removed `@prisma/client` dependency
+- Supabase migrations now managed in `/supabase/migrations/*.sql`
+- Generated TypeScript types in `types/database.ts` from Supabase schema
+
+**Implementation Pattern:**
 ```typescript
-// lib/supabase.ts - Lazy initialization
-export function getSupabaseClient() {
-  if (supabaseClient) return supabaseClient
-  
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
-  
-  if (!supabaseUrl || !supabaseKey) {
-    throw new Error('Missing Supabase environment variables')
-  }
-  
-  supabaseClient = createClient(supabaseUrl, supabaseKey)
-  return supabaseClient
-}
+// All routes follow this pattern
+const supabase = getSupabaseClient()
+const { data, error } = await supabase
+  .from('table_name')              // snake_case table names
+  .select('col1, col2')            // all columns snake_case
+  .eq('column_name', value)        // filters
+  .order('created_at')             // sorting
+  .single() / .limit(10)           // fetch mode
+
+if (error) throw error
+return NextResponse.json(data)
 ```
 
-**Lazy initialization prevents build-time errors:** Only initializes when route is called (runtime), not at module load (build time).
-
-**Routes using REST API:**
-- `/api/health` → count items + sessions
-- `/api/admin/items` → list + create items
-- `/api/admin/items/[itemNumber]` → fetch + update item
-- `/api/admin/gad7-items` → list + create GAD-7 items
-
-**Next: Migrate remaining routes** (respondents, sessions, scoring) to REST API pattern.
+**Key Routes (All Migrated):**
+- `POST /api/respondents` → create respondent (auto-generates respondent_code)
+- `POST /api/sessions` → create session (finds respondent by respondent_code)
+- `GET /api/sessions/[id]` → fetch session with progress
+- `PUT /api/sessions/[id]/items/[num]` → save MPPI item response, auto-transitions at item 118
+- `PUT /api/sessions/[id]/gad7` → save GAD-7 response, auto-scores on impairment
+- `POST /api/sessions/[id]/calculate` → manual scoring endpoint
+- `GET /api/admin/stats` → session statistics
+- `GET/POST /api/admin/items` → MPPI item CRUD
+- `GET/POST /api/admin/gad7-items` → GAD-7 item CRUD
+- `GET /api/export/csv` → export all sessions + responses as CSV
 
 ## Frontend State Management (Zustand)
 
@@ -422,20 +426,29 @@ See `THEME_SYSTEM.md` for:
 
 ## Implementation Status
 
-### Production Ready (V1.0)
+### Production Ready (V1.1 - Supabase-Native)
 - ✅ Core assessment + scoring (118 MPPI + 7 GAD-7 items)
 - ✅ PDF reports (@react-pdf/renderer)
 - ✅ Google Sheets export (append-only, service account auth)
-- ✅ Admin item management (4-tab dashboard)
-- ✅ Supabase REST API integration (health, items, gad7 endpoints)
+- ✅ Admin item management (4-tab dashboard with language tabs)
+- ✅ Supabase-native architecture (REST API all endpoints)
+- ✅ Prisma removed - pure Supabase migrations
+- ✅ Complete REST API migration:
+  - Respondent creation with auto-generated code
+  - Session create/read/update with progress tracking
+  - MPPI item response save with auto-transition at item 118
+  - GAD-7 response save with auto-scoring on impairment
+  - Auto-completion to RESULTS phase on final score
 - ✅ Static admin authentication (env var credentials + session cookies)
 - ✅ Premium theme system (4 color variants, persistent)
-- ✅ Vercel deployment (production URL working, 125 items loaded)
+- ✅ Assessment setup with scrollable form (sticky header/footer)
+- ✅ Multilingual modals (EN/HI/MR for questions)
+- ✅ Full end-to-end flow verified (respondent → session → items → GAD-7 → results)
+- ✅ Vercel deployment (production URL working)
 
-### In Progress / TODO (V1.1+)
-- 🚧 Complete REST API migration (respondents, sessions, scoring routes)
-- 🚧 Respondent registration UI (demographics collection flow)
-- 🚧 Session management endpoints (create, list, update status)
+### In Progress / TODO (V1.2+)
+- 🚧 Respondent registration UI (demographics collection flow - form built, flow needs wiring)
+- 🚧 Results display page (fetch SessionResult, show Prakriti + GAD-7)
 - ⬜ Multi-language UI labels (currently: EN only, questions: EN/HI/MR)
 - ⬜ Bulk item import (CSV/Excel)
 - ⬜ Recommendations engine (prakriti-based lifestyle advice)
