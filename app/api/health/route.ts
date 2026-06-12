@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { getSupabaseClient } from '@/lib/supabase'
 
 export async function GET() {
   try {
+    const supabase = getSupabaseClient()
     const [itemData, sessionData] = await Promise.all([
       supabase.from('Item').select('count', { count: 'exact' }),
       supabase.from('Session').select('count', { count: 'exact' }),
