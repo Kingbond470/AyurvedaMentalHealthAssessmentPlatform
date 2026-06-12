@@ -164,21 +164,23 @@ export default function AssessmentSetupPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-ui text-text-primary mb-1">
+                <label className="block text-sm font-ui text-text-primary mb-2">
                   {getLabel('gender', uiLanguage)} *
                 </label>
-                <div className="flex gap-3">
+                <div className="flex gap-2">
                   {['MALE', 'FEMALE', 'OTHER'].map((g) => (
-                    <label key={g} className="flex items-center gap-2 font-ui">
-                      <input
-                        type="radio"
-                        name="gender"
-                        value={g}
-                        checked={gender === g}
-                        onChange={(e) => setGender(e.target.value)}
-                      />
+                    <button
+                      key={g}
+                      type="button"
+                      onClick={() => setGender(g)}
+                      className={`flex-1 px-3 py-2 rounded-lg border-2 font-ui font-600 transition ${
+                        gender === g
+                          ? 'bg-primary-500 border-primary-500 text-white'
+                          : 'bg-bg-section border-border-light text-text-primary hover:border-primary-500'
+                      }`}
+                    >
                       {g.charAt(0) + g.slice(1).toLowerCase()}
-                    </label>
+                    </button>
                   ))}
                 </div>
               </div>
@@ -263,21 +265,23 @@ export default function AssessmentSetupPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-ui text-text-primary mb-1">
+                <label className="block text-sm font-ui text-text-primary mb-2">
                   {getLabel('language', uiLanguage)}
                 </label>
-                <div className="flex gap-3">
+                <div className="flex gap-2">
                   {['EN', 'HI', 'MR'].map((lang) => (
-                    <label key={lang} className="flex items-center gap-2 font-ui">
-                      <input
-                        type="radio"
-                        name="language"
-                        value={lang}
-                        checked={language === lang}
-                        onChange={(e) => setLangSelection(e.target.value)}
-                      />
+                    <button
+                      key={lang}
+                      type="button"
+                      onClick={() => setLangSelection(lang)}
+                      className={`flex-1 px-3 py-2 rounded-lg border-2 font-ui font-600 transition ${
+                        language === lang
+                          ? 'bg-primary-500 border-primary-500 text-white'
+                          : 'bg-bg-section border-border-light text-text-primary hover:border-primary-500'
+                      }`}
+                    >
                       {lang === 'EN' ? getLabel('english', uiLanguage) : lang === 'HI' ? getLabel('hindi', uiLanguage) : getLabel('marathi', uiLanguage)}
-                    </label>
+                    </button>
                   ))}
                 </div>
               </div>
