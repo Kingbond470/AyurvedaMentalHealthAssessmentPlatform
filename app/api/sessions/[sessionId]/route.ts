@@ -8,49 +8,34 @@ export async function GET(
   try {
     const supabase = getSupabaseClient()
 
-    // Fetch session with respondent and result data
-    const [
-      { data: session, error: sessionError },
-      { data: respondent, error: respondentError },
-      { data: result, error: resultError }
-    ] = await Promise.all([
-      supabase
-        .from('session')
-        .select('*')
-        .eq('id', params.sessionId)
-        .single(),
-      supabase
-        .from('respondent')
-        .select('*')
-        .eq('id', params.sessionId) // This will be empty, but we'll join via session
-        .single()
-        .catch(() => ({ data: null })),
-      supabase
-        .from('session_result')
-        .select('*')
-        .eq('session_id', params.sessionId)
-        .single()
-        .catch(() => ({ data: null }))
-    ])
+    // Fetch session
+    const { data: session, error: sessionError } = await supabase
+      .from('session')
+      .select('*')
+      .eq('id', params.sessionId)
+      .single()
 
     if (sessionError || !session) {
       return NextResponse.json({ error: 'Session not found' }, { status: 404 })
     }
 
-    // Fetch respondent using the respondent_id from session
-    const { data: respondentData, error: respError } = await supabase
+    // Fetch respondent using respondent_id from session
+    const { data: respondentData } = await supabase
       .from('respondent')
       .select('*')
       .eq('id', session.respondent_id)
       .single()
 
-    // Fetch result data
-    const { data: resultData } = await supabase
-      .from('session_result')
-      .select('*')
-      .eq('session_id', params.sessionId)
-      .single()
-      .catch(() => ({ data: null }))
+    // Fetch result data if session is completed
+    let resultData = null
+    if (session.status === 'COMPLETED') {
+      const { data: result } = await supabase
+        .from('session_result')
+        .select('*')
+        .eq('session_id', params.sessionId)
+        .single()
+      resultData = result
+    }
 
     return NextResponse.json({
       ...session,
