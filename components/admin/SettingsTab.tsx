@@ -215,26 +215,6 @@ export default function SettingsTab() {
         </div>
       </div>
 
-      {/* Danger Zone */}
-      <div className="bg-red-600/5 border border-red-600/20 rounded-lg p-8">
-        <h3 className="text-lg font-display text-red-600 mb-4">
-          Danger Zone
-        </h3>
-        <div className="space-y-3">
-          <button
-            disabled
-            className="w-full px-6 py-3 bg-red-600/10 border border-red-600/50 rounded-lg font-ui font-600 text-red-600 disabled:opacity-50 transition"
-          >
-            Reset All Items (Coming Soon)
-          </button>
-          <button
-            disabled
-            className="w-full px-6 py-3 bg-red-600/10 border border-red-600/50 rounded-lg font-ui font-600 text-red-600 disabled:opacity-50 transition"
-          >
-            Delete All Sessions (Coming Soon)
-          </button>
-        </div>
-      </div>
     </div>
   )
 }

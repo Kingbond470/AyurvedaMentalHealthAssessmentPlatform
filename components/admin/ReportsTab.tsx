@@ -96,9 +96,9 @@ export default function ReportsTab() {
     })
   )
 
-  const completionRate = Math.round(
-    (stats.completedSessions / stats.totalSessions) * 100
-  )
+  const completionRate = stats.totalSessions > 0
+    ? Math.round((stats.completedSessions / stats.totalSessions) * 100)
+    : 0
 
   return (
     <div className="space-y-8">
@@ -133,9 +133,9 @@ export default function ReportsTab() {
             {stats.inProgressSessions}
           </div>
           <div className="text-xs text-text-tertiary mt-1">
-            {Math.round(
-              (stats.inProgressSessions / stats.totalSessions) * 100
-            )}
+            {stats.totalSessions > 0
+              ? Math.round((stats.inProgressSessions / stats.totalSessions) * 100)
+              : 0}
             % {getLabel('activePercentage', language)}
           </div>
         </div>
