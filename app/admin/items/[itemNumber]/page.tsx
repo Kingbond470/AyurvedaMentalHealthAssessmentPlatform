@@ -4,6 +4,50 @@ import { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import axios from 'axios'
 
+interface ProbeProps {
+  probeNum: 1 | 2 | 3
+  lang: 'en' | 'hi' | 'mr'
+  formData: Partial<Item>
+  handleInputChange: (field: string, value: string) => void
+}
+
+function ProbeSection({ probeNum, lang, formData, handleInputChange }: ProbeProps) {
+  const langSuffix = lang === 'en' ? 'En' : lang === 'hi' ? 'Hi' : 'Mr';
+  const questionKey = `probe${probeNum}Question${langSuffix}` as keyof Item;
+  const questionValue = (formData as any)[questionKey] || '';
+
+  return (
+    <div className="space-y-3">
+      <h3 className="font-display text-lg text-text-primary">Probe {probeNum}</h3>
+      <input
+        type="text"
+        placeholder={`Question (${lang.toUpperCase()})`}
+        value={questionValue}
+        onChange={(e) => handleInputChange(questionKey, e.target.value)}
+        className="w-full px-4 py-2 border border-border-light rounded-lg font-body focus:outline-none focus:border-primary-500 bg-[var(--bg-secondary)] text-[var(--text-primary)]"
+      />
+      <div className="grid grid-cols-2 gap-2">
+        {[0, 1, 2, 3, 4].map((score) => {
+          const scoreKey = `probe${probeNum}Score${score}${langSuffix}` as keyof Item;
+          const scoreValue = (formData as any)[scoreKey] || '';
+          return (
+            <input
+              key={score}
+              type="text"
+              placeholder={`Score ${score}`}
+              value={scoreValue}
+              onChange={(e) => handleInputChange(scoreKey, e.target.value)}
+              className={`px-3 py-2 border border-border-light rounded text-sm bg-[var(--bg-secondary)] text-[var(--text-primary)] ${
+                score === 4 ? 'col-span-2' : ''
+              }`}
+            />
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 interface Item {
   id: string
   itemNumber: number
@@ -51,6 +95,7 @@ export default function EditItemPage() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  const [activeLang, setActiveLang] = useState<'en' | 'hi' | 'mr'>('en')
 
   useEffect(() => {
     const fetchItem = async () => {
@@ -138,169 +183,78 @@ export default function EditItemPage() {
       </header>
 
       <main className="container-dashboard px-4 py-8">
-        <div className="bg-bg-surface rounded-lg p-6 border border-border-light space-y-6 max-w-2xl">
-          {/* Core Probe - English */}
-          <div>
-            <label className="block text-sm font-ui font-600 text-text-primary mb-2">
-              Core Probe (English)
-            </label>
-            <textarea
-              value={formData.coreProbeEn || ''}
-              onChange={(e) => handleInputChange('coreProbeEn', e.target.value)}
-              rows={3}
-              className="w-full px-4 py-2 border border-border-light rounded-lg font-body focus:outline-none focus:border-primary-500 bg-[var(--bg-secondary)] text-[var(--text-primary)]"
-            />
+        <div className="bg-bg-surface rounded-lg border border-border-light max-w-4xl">
+          {/* Tabs */}
+          <div className="flex gap-1 px-6 pt-4 border-b border-border-light">
+            {[
+              { code: 'en' as const, label: 'English' },
+              { code: 'hi' as const, label: 'Hindi' },
+              { code: 'mr' as const, label: 'Marathi' },
+            ].map((lang) => (
+              <button
+                key={lang.code}
+                onClick={() => setActiveLang(lang.code)}
+                className={`px-4 py-3 font-ui font-600 border-b-2 transition ${
+                  activeLang === lang.code
+                    ? 'border-primary-500 text-text-primary'
+                    : 'border-transparent text-text-secondary hover:text-text-primary'
+                }`}
+              >
+                {lang.label}
+              </button>
+            ))}
           </div>
 
-          {/* Probe 1 */}
-          <div className="space-y-3">
-            <h3 className="font-display text-lg text-text-primary">Probe 1 - Question</h3>
-            <input
-              type="text"
-              placeholder="English question"
-              value={formData.probe1QuestionEn || ''}
-              onChange={(e) => handleInputChange('probe1QuestionEn', e.target.value)}
-              className="w-full px-4 py-2 border border-border-light rounded-lg font-body focus:outline-none focus:border-primary-500 bg-[var(--bg-secondary)] text-[var(--text-primary)]"
-            />
-            <div className="grid grid-cols-2 gap-2">
-              <input
-                type="text"
-                placeholder="Score 0"
-                value={formData.probe1Score0En || ''}
-                onChange={(e) => handleInputChange('probe1Score0En', e.target.value)}
-                className="px-3 py-2 border border-border-light rounded text-sm bg-[var(--bg-secondary)] text-[var(--text-primary)]"
-              />
-              <input
-                type="text"
-                placeholder="Score 1"
-                value={formData.probe1Score1En || ''}
-                onChange={(e) => handleInputChange('probe1Score1En', e.target.value)}
-                className="px-3 py-2 border border-border-light rounded text-sm bg-[var(--bg-secondary)] text-[var(--text-primary)]"
-              />
-              <input
-                type="text"
-                placeholder="Score 2"
-                value={formData.probe1Score2En || ''}
-                onChange={(e) => handleInputChange('probe1Score2En', e.target.value)}
-                className="px-3 py-2 border border-border-light rounded text-sm bg-[var(--bg-secondary)] text-[var(--text-primary)]"
-              />
-              <input
-                type="text"
-                placeholder="Score 3"
-                value={formData.probe1Score3En || ''}
-                onChange={(e) => handleInputChange('probe1Score3En', e.target.value)}
-                className="px-3 py-2 border border-border-light rounded text-sm bg-[var(--bg-secondary)] text-[var(--text-primary)]"
-              />
-              <input
-                type="text"
-                placeholder="Score 4"
-                value={formData.probe1Score4En || ''}
-                onChange={(e) => handleInputChange('probe1Score4En', e.target.value)}
-                className="px-3 py-2 border border-border-light rounded text-sm bg-[var(--bg-secondary)] text-[var(--text-primary)] col-span-2"
+          {/* Form Content */}
+          <div className="p-6 space-y-6 max-w-2xl">
+            {/* Core Probe */}
+            <div>
+              <label className="block text-sm font-ui font-600 text-text-primary mb-2">
+                Core Probe ({activeLang.toUpperCase()})
+              </label>
+              <textarea
+                value={
+                  activeLang === 'en'
+                    ? (formData.coreProbeEn || '')
+                    : activeLang === 'hi'
+                      ? (formData.coreProbeHi || '')
+                      : (formData.coreProbeMr || '')
+                }
+                onChange={(e) =>
+                  handleInputChange(`coreProbe${activeLang.toUpperCase()}`, e.target.value)
+                }
+                rows={3}
+                className="w-full px-4 py-2 border border-border-light rounded-lg font-body focus:outline-none focus:border-primary-500 bg-[var(--bg-secondary)] text-[var(--text-primary)]"
               />
             </div>
-          </div>
 
-          {/* Probe 2 */}
-          <div className="space-y-3">
-            <h3 className="font-display text-lg text-text-primary">Probe 2 - Question</h3>
-            <input
-              type="text"
-              placeholder="English question"
-              value={formData.probe2QuestionEn || ''}
-              onChange={(e) => handleInputChange('probe2QuestionEn', e.target.value)}
-              className="w-full px-4 py-2 border border-border-light rounded-lg font-body focus:outline-none focus:border-primary-500 bg-[var(--bg-secondary)] text-[var(--text-primary)]"
+            {/* Probe 1 */}
+            <ProbeSection
+              probeNum={1}
+              lang={activeLang}
+              formData={formData}
+              handleInputChange={handleInputChange}
             />
-            <div className="grid grid-cols-2 gap-2">
-              <input
-                type="text"
-                placeholder="Score 0"
-                value={formData.probe2Score0En || ''}
-                onChange={(e) => handleInputChange('probe2Score0En', e.target.value)}
-                className="px-3 py-2 border border-border-light rounded text-sm bg-[var(--bg-secondary)] text-[var(--text-primary)]"
-              />
-              <input
-                type="text"
-                placeholder="Score 1"
-                value={formData.probe2Score1En || ''}
-                onChange={(e) => handleInputChange('probe2Score1En', e.target.value)}
-                className="px-3 py-2 border border-border-light rounded text-sm bg-[var(--bg-secondary)] text-[var(--text-primary)]"
-              />
-              <input
-                type="text"
-                placeholder="Score 2"
-                value={formData.probe2Score2En || ''}
-                onChange={(e) => handleInputChange('probe2Score2En', e.target.value)}
-                className="px-3 py-2 border border-border-light rounded text-sm bg-[var(--bg-secondary)] text-[var(--text-primary)]"
-              />
-              <input
-                type="text"
-                placeholder="Score 3"
-                value={formData.probe2Score3En || ''}
-                onChange={(e) => handleInputChange('probe2Score3En', e.target.value)}
-                className="px-3 py-2 border border-border-light rounded text-sm bg-[var(--bg-secondary)] text-[var(--text-primary)]"
-              />
-              <input
-                type="text"
-                placeholder="Score 4"
-                value={formData.probe2Score4En || ''}
-                onChange={(e) => handleInputChange('probe2Score4En', e.target.value)}
-                className="px-3 py-2 border border-border-light rounded text-sm bg-[var(--bg-secondary)] text-[var(--text-primary)] col-span-2"
-              />
-            </div>
-          </div>
 
-          {/* Probe 3 */}
-          <div className="space-y-3">
-            <h3 className="font-display text-lg text-text-primary">Probe 3 - Question</h3>
-            <input
-              type="text"
-              placeholder="English question"
-              value={formData.probe3QuestionEn || ''}
-              onChange={(e) => handleInputChange('probe3QuestionEn', e.target.value)}
-              className="w-full px-4 py-2 border border-border-light rounded-lg font-body focus:outline-none focus:border-primary-500 bg-[var(--bg-secondary)] text-[var(--text-primary)]"
+            {/* Probe 2 */}
+            <ProbeSection
+              probeNum={2}
+              lang={activeLang}
+              formData={formData}
+              handleInputChange={handleInputChange}
             />
-            <div className="grid grid-cols-2 gap-2">
-              <input
-                type="text"
-                placeholder="Score 0"
-                value={formData.probe3Score0En || ''}
-                onChange={(e) => handleInputChange('probe3Score0En', e.target.value)}
-                className="px-3 py-2 border border-border-light rounded text-sm bg-[var(--bg-secondary)] text-[var(--text-primary)]"
-              />
-              <input
-                type="text"
-                placeholder="Score 1"
-                value={formData.probe3Score1En || ''}
-                onChange={(e) => handleInputChange('probe3Score1En', e.target.value)}
-                className="px-3 py-2 border border-border-light rounded text-sm bg-[var(--bg-secondary)] text-[var(--text-primary)]"
-              />
-              <input
-                type="text"
-                placeholder="Score 2"
-                value={formData.probe3Score2En || ''}
-                onChange={(e) => handleInputChange('probe3Score2En', e.target.value)}
-                className="px-3 py-2 border border-border-light rounded text-sm bg-[var(--bg-secondary)] text-[var(--text-primary)]"
-              />
-              <input
-                type="text"
-                placeholder="Score 3"
-                value={formData.probe3Score3En || ''}
-                onChange={(e) => handleInputChange('probe3Score3En', e.target.value)}
-                className="px-3 py-2 border border-border-light rounded text-sm bg-[var(--bg-secondary)] text-[var(--text-primary)]"
-              />
-              <input
-                type="text"
-                placeholder="Score 4"
-                value={formData.probe3Score4En || ''}
-                onChange={(e) => handleInputChange('probe3Score4En', e.target.value)}
-                className="px-3 py-2 border border-border-light rounded text-sm bg-[var(--bg-secondary)] text-[var(--text-primary)] col-span-2"
-              />
-            </div>
+
+            {/* Probe 3 */}
+            <ProbeSection
+              probeNum={3}
+              lang={activeLang}
+              formData={formData}
+              handleInputChange={handleInputChange}
+            />
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-4 pt-6 border-t border-border-light">
+          <div className="flex gap-4 p-6 pt-6 border-t border-border-light">
             <button
               onClick={handleSave}
               disabled={saving}
