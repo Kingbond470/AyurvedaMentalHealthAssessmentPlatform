@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { supabase } from '@/lib/supabase'
 
 export async function GET(
   _: Request,
@@ -17,18 +15,20 @@ export async function GET(
       )
     }
 
-    const item = await prisma.item.findUnique({
-      where: { itemNumber },
-    })
+    const { data, error } = await supabase
+      .from('Item')
+      .select('*')
+      .eq('itemNumber', itemNumber)
+      .single()
 
-    if (!item) {
+    if (error) {
       return NextResponse.json(
         { error: 'Item not found' },
         { status: 404 }
       )
     }
 
-    return NextResponse.json(item)
+    return NextResponse.json(data)
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Server error' },

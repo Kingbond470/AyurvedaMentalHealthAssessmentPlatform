@@ -1,10 +1,15 @@
 import { NextResponse } from 'next/server'
-import prisma from "@/lib/prisma"
+import { supabase } from '@/lib/supabase'
 
 export async function GET() {
   try {
-    const itemCount = await prisma.item.count()
-    const sessionCount = await prisma.session.count()
+    const [itemData, sessionData] = await Promise.all([
+      supabase.from('Item').select('count', { count: 'exact' }),
+      supabase.from('Session').select('count', { count: 'exact' }),
+    ])
+
+    const itemCount = itemData.count || 0
+    const sessionCount = sessionData.count || 0
 
     return NextResponse.json({
       status: 'ok',

@@ -1,13 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
-import prisma from '@/lib/prisma'
+import { supabase } from '@/lib/supabase'
 
 export async function GET(_: NextRequest) {
   try {
-    const items = await prisma.item.findMany({
-      orderBy: { itemNumber: 'asc' },
-    })
+    const { data, error } = await supabase
+      .from('Item')
+      .select('*')
+      .order('itemNumber', { ascending: true })
 
-    return NextResponse.json(items, { status: 200 })
+    if (error) throw error
+
+    return NextResponse.json(data || [], { status: 200 })
   } catch (error) {
     console.error('Items fetch error:', error)
     return NextResponse.json(
@@ -20,24 +23,15 @@ export async function GET(_: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const item = await prisma.item.create({
-      data: {
-        itemNumber: body.itemNumber,
-        section: body.section,
-        sectionName: body.sectionName,
-        predictorSanskrit: body.predictorSanskrit,
-        predictorDevanagari: body.predictorDevanagari,
-        interpretation: body.interpretation,
-        coreProbeEn: body.coreProbeEn,
-        probe1QuestionEn: body.probe1QuestionEn,
-        probe2QuestionEn: body.probe2QuestionEn,
-        probe3QuestionEn: body.probe3QuestionEn,
-        mappedSubtypes: body.mappedSubtypes || [],
-        isObserverRated: body.isObserverRated || false,
-      },
-    })
+    const { data, error } = await supabase
+      .from('Item')
+      .insert([body])
+      .select()
+      .single()
 
-    return NextResponse.json(item, { status: 201 })
+    if (error) throw error
+
+    return NextResponse.json(data, { status: 201 })
   } catch (error) {
     console.error('Item creation error:', error)
     return NextResponse.json(

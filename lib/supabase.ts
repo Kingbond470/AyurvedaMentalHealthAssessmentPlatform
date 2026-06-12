@@ -8,8 +8,3 @@ if (!supabaseUrl || !supabaseKey) {
 }
 
 export const supabase = createClient(supabaseUrl, supabaseKey)
-
-// Client-side Supabase client
-export const createSupabaseClient = () => {
-  return createClient(supabaseUrl, supabaseKey)
-}
