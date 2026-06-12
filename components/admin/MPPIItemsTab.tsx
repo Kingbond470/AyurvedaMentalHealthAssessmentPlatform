@@ -24,6 +24,7 @@ export default function MPPIItemsTab() {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedSection, setSelectedSection] = useState<number | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
+  const [viewItem, setViewItem] = useState<Item | null>(null)
 
   useEffect(() => {
     const fetchItems = async () => {
@@ -99,7 +100,7 @@ export default function MPPIItemsTab() {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-ui font-600 text-text-primary mb-2">
                 Section
@@ -139,8 +140,8 @@ export default function MPPIItemsTab() {
         {Math.min(startIdx + ITEMS_PER_PAGE, filtered.length)} of {filtered.length} items
       </div>
 
-      {/* Table */}
-      <div className="bg-bg-surface rounded-lg shadow-sm overflow-hidden">
+      {/* Table - Desktop */}
+      <div className="bg-bg-surface rounded-lg shadow-sm overflow-hidden hidden md:block">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-bg-section border-b border-border-light">
@@ -235,9 +236,7 @@ export default function MPPIItemsTab() {
                             Edit
                           </Link>
                           <button
-                            onClick={() => {
-                              // TODO: Implement view/preview
-                            }}
+                            onClick={() => setViewItem(item)}
                             className="px-3 py-1 bg-bg-section text-text-primary border border-border-light rounded hover:bg-border-light transition"
                           >
                             View
@@ -253,13 +252,53 @@ export default function MPPIItemsTab() {
         </div>
       </div>
 
+      {/* Cards - Mobile */}
+      <div className="space-y-3 md:hidden">
+        {paginatedItems.length === 0 ? (
+          <div className="text-center text-text-secondary py-8">No items found</div>
+        ) : (
+          paginatedItems.map((item) => {
+            const status = getStatus(item)
+            return (
+              <div key={item.id} className="bg-bg-surface rounded-lg p-4 border border-border-light space-y-3">
+                <div>
+                  <div className="font-ui font-600 text-text-primary text-sm">Item #{item.itemNumber}</div>
+                  <div className="text-xs text-text-secondary mt-1">{item.predictorSanskrit}</div>
+                  <div className="text-xs text-text-secondary font-devanagari">{item.predictorDevanagari}</div>
+                </div>
+                <div className="flex gap-2 text-xs">
+                  <span>Sec {item.section}</span>
+                  <span className={status.en === '✓' ? 'text-green-600' : 'text-red-600'}>EN {status.en}</span>
+                  <span className={status.hi === '✓' ? 'text-green-600' : 'text-text-tertiary'}>HI {status.hi}</span>
+                  <span className={status.mr === '✓' ? 'text-green-600' : 'text-text-tertiary'}>MR {status.mr}</span>
+                </div>
+                <div className="flex gap-2">
+                  <Link
+                    href={`/admin/items/${item.itemNumber}`}
+                    className="flex-1 px-3 py-2 bg-primary-500 text-white rounded text-sm hover:bg-primary-600 transition text-center"
+                  >
+                    Edit
+                  </Link>
+                  <button
+                    onClick={() => setViewItem(item)}
+                    className="flex-1 px-3 py-2 bg-bg-section text-text-primary border border-border-light rounded text-sm hover:bg-border-light transition"
+                  >
+                    View
+                  </button>
+                </div>
+              </div>
+            )
+          })
+        )}
+      </div>
+
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2">
+        <div className="flex items-center justify-center gap-2 overflow-x-auto">
           <button
             onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
             disabled={currentPage === 1}
-            className="px-4 py-2 bg-bg-section border border-border-light rounded-lg font-ui disabled:opacity-50 hover:bg-border-light transition"
+            className="px-4 py-2 bg-bg-section border border-border-light rounded-lg font-ui disabled:opacity-50 hover:bg-border-light transition whitespace-nowrap"
           >
             ← Previous
           </button>
@@ -299,10 +338,52 @@ export default function MPPIItemsTab() {
           <button
             onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
             disabled={currentPage === totalPages}
-            className="px-4 py-2 bg-bg-section border border-border-light rounded-lg font-ui disabled:opacity-50 hover:bg-border-light transition"
+            className="px-4 py-2 bg-bg-section border border-border-light rounded-lg font-ui disabled:opacity-50 hover:bg-border-light transition whitespace-nowrap"
           >
             Next →
           </button>
+        </div>
+      )}
+
+      {/* View Modal */}
+      {viewItem && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-bg-surface rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-bg-section border-b border-border-light p-6 flex items-center justify-between">
+              <h2 className="text-xl font-display text-text-primary">
+                Item #{viewItem.itemNumber}
+              </h2>
+              <button
+                onClick={() => setViewItem(null)}
+                className="text-text-secondary hover:text-text-primary text-2xl"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="p-6 space-y-6">
+              <div>
+                <h3 className="font-ui font-600 text-text-primary mb-2">Predictor (Sanskrit)</h3>
+                <p className="font-body text-text-secondary">{viewItem.predictorSanskrit}</p>
+                <p className="font-devanagari text-text-secondary text-sm">{viewItem.predictorDevanagari}</p>
+              </div>
+
+              <div>
+                <h3 className="font-ui font-600 text-text-primary mb-2">Core Probe (EN)</h3>
+                <p className="font-body text-text-primary">{viewItem.coreProbeEn || '—'}</p>
+              </div>
+
+              <div className="pt-4 border-t border-border-light">
+                <Link
+                  href={`/admin/items/${viewItem.itemNumber}`}
+                  onClick={() => setViewItem(null)}
+                  className="px-4 py-2 bg-primary-500 text-white rounded hover:bg-primary-600 transition inline-block"
+                >
+                  Edit Full Item
+                </Link>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

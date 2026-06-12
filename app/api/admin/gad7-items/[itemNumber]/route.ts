@@ -17,7 +17,7 @@ export async function GET(
 
     const supabase = getSupabaseClient()
     const { data, error } = await supabase
-      .from('Item')
+      .from('GAD7Item')
       .select('*')
       .eq('itemNumber', itemNumber)
       .single()
@@ -56,7 +56,7 @@ export async function PUT(
     const supabase = getSupabaseClient()
 
     const { data, error } = await supabase
-      .from('Item')
+      .from('GAD7Item')
       .update(body)
       .eq('itemNumber', itemNumber)
       .select()

@@ -28,6 +28,8 @@ export default function GAD7Tab() {
   const [items, setItems] = useState<GAD7Item[]>([])
   const [loading, setLoading] = useState(true)
   const [expandedItem, setExpandedItem] = useState<number | null>(null)
+  const [editingItem, setEditingItem] = useState<number | null>(null)
+  const [editData, setEditData] = useState<Partial<GAD7Item>>({})
 
   useEffect(() => {
     const fetchItems = async () => {
@@ -44,6 +46,30 @@ export default function GAD7Tab() {
 
     fetchItems()
   }, [])
+
+  const startEdit = (item: GAD7Item) => {
+    setEditingItem(item.itemNumber)
+    setEditData(item)
+  }
+
+  const handleSaveEdit = async () => {
+    try {
+      await axios.put(`/api/admin/gad7-items/${editingItem}`, editData)
+      // Update local state
+      setItems((prev) =>
+        prev.map((item) =>
+          item.itemNumber === editingItem ? { ...item, ...editData } : item
+        )
+      )
+      setEditingItem(null)
+    } catch (error) {
+      console.error('Failed to save GAD-7 item:', error)
+    }
+  }
+
+  const handleInputChange = (field: string, value: string) => {
+    setEditData((prev) => ({ ...prev, [field]: value }))
+  }
 
   if (loading) {
     return <div className="text-center py-8">Loading GAD-7 items...</div>
@@ -240,7 +266,10 @@ export default function GAD7Tab() {
 
                   {/* Edit Button */}
                   <div className="pt-4 border-t border-border-light">
-                    <button className="px-4 py-2 bg-primary-500 text-white rounded-lg font-ui font-600 hover:bg-primary-600 transition">
+                    <button
+                      onClick={() => startEdit(item)}
+                      className="px-4 py-2 bg-primary-500 text-white rounded-lg font-ui font-600 hover:bg-primary-600 transition"
+                    >
                       Edit Question & Options
                     </button>
                   </div>
@@ -250,6 +279,73 @@ export default function GAD7Tab() {
           )
         })}
       </div>
+
+      {/* Edit Modal */}
+      {editingItem && editData && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-bg-surface rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-bg-section border-b border-border-light p-6 flex items-center justify-between">
+              <h2 className="text-xl font-display text-text-primary">
+                Edit GAD-7 Item {editingItem}
+              </h2>
+              <button
+                onClick={() => setEditingItem(null)}
+                className="text-text-secondary hover:text-text-primary text-2xl"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="p-6 space-y-6">
+              <div>
+                <label className="block text-sm font-ui font-600 text-text-primary mb-2">
+                  Question (English)
+                </label>
+                <input
+                  type="text"
+                  value={editData.questionEn || ''}
+                  onChange={(e) => handleInputChange('questionEn', e.target.value)}
+                  className="w-full px-4 py-2 border border-border-light rounded-lg font-body focus:outline-none focus:border-primary-500 bg-[var(--bg-secondary)] text-[var(--text-primary)]"
+                />
+              </div>
+
+              <div className="space-y-3">
+                <h3 className="font-ui font-600 text-text-primary">Response Options</h3>
+                {[
+                  { key: 'option0En', label: 'Option 0' },
+                  { key: 'option1En', label: 'Option 1' },
+                  { key: 'option2En', label: 'Option 2' },
+                  { key: 'option3En', label: 'Option 3' },
+                ].map((opt) => (
+                  <input
+                    key={opt.key}
+                    type="text"
+                    placeholder={opt.label}
+                    value={(editData as any)[opt.key] || ''}
+                    onChange={(e) => handleInputChange(opt.key, e.target.value)}
+                    className="w-full px-4 py-2 border border-border-light rounded-lg font-body focus:outline-none focus:border-primary-500 bg-[var(--bg-secondary)] text-[var(--text-primary)]"
+                  />
+                ))}
+              </div>
+
+              <div className="flex gap-3 pt-4 border-t border-border-light">
+                <button
+                  onClick={handleSaveEdit}
+                  className="flex-1 px-4 py-2 bg-primary-500 text-white rounded-lg font-ui font-600 hover:bg-primary-600 transition"
+                >
+                  Save Changes
+                </button>
+                <button
+                  onClick={() => setEditingItem(null)}
+                  className="flex-1 px-4 py-2 bg-bg-section text-text-primary border border-border-light rounded-lg font-ui font-600 hover:bg-border-light transition"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
