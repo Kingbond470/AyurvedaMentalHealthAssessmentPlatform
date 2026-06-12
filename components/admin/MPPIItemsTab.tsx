@@ -25,6 +25,7 @@ export default function MPPIItemsTab() {
   const [selectedSection, setSelectedSection] = useState<number | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const [viewItem, setViewItem] = useState<Item | null>(null)
+  const [viewLang, setViewLang] = useState<'en' | 'hi' | 'mr'>('en')
 
   useEffect(() => {
     const fetchItems = async () => {
@@ -348,8 +349,8 @@ export default function MPPIItemsTab() {
       {/* View Modal */}
       {viewItem && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-bg-surface rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-bg-section border-b border-border-light p-6 flex items-center justify-between">
+          <div className="bg-bg-surface rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto flex flex-col">
+            <div className="sticky top-0 bg-bg-section border-b border-border-light p-6 flex items-center justify-between shrink-0">
               <h2 className="text-xl font-display text-text-primary">
                 Item #{viewItem.itemNumber}
               </h2>
@@ -361,7 +362,29 @@ export default function MPPIItemsTab() {
               </button>
             </div>
 
-            <div className="p-6 space-y-6">
+            {/* Language Tabs */}
+            <div className="flex gap-1 px-6 pt-4 border-b border-border-light shrink-0">
+              {[
+                { code: 'en' as const, label: 'EN', probe: viewItem.coreProbeEn },
+                { code: 'hi' as const, label: 'HI', probe: viewItem.coreProbeHi },
+                { code: 'mr' as const, label: 'MR', probe: viewItem.coreProbeMr },
+              ].map((lang) => (
+                <button
+                  key={lang.code}
+                  onClick={() => setViewLang(lang.code)}
+                  disabled={!lang.probe}
+                  className={`px-4 py-2 font-ui font-600 border-b-2 transition ${
+                    viewLang === lang.code
+                      ? 'border-primary-500 text-text-primary'
+                      : 'border-transparent text-text-secondary hover:text-text-primary disabled:opacity-50 disabled:cursor-not-allowed'
+                  }`}
+                >
+                  {lang.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-6 space-y-6">
               <div>
                 <h3 className="font-ui font-600 text-text-primary mb-2">Predictor (Sanskrit)</h3>
                 <p className="font-body text-text-secondary">{viewItem.predictorSanskrit}</p>
@@ -369,8 +392,16 @@ export default function MPPIItemsTab() {
               </div>
 
               <div>
-                <h3 className="font-ui font-600 text-text-primary mb-2">Core Probe (EN)</h3>
-                <p className="font-body text-text-primary">{viewItem.coreProbeEn || '—'}</p>
+                <h3 className="font-ui font-600 text-text-primary mb-2">
+                  Core Probe ({viewLang.toUpperCase()})
+                </h3>
+                <p className="font-body text-text-primary">
+                  {viewLang === 'en'
+                    ? viewItem.coreProbeEn || '—'
+                    : viewLang === 'hi'
+                      ? viewItem.coreProbeHi || '—'
+                      : viewItem.coreProbeMr || '—'}
+                </p>
               </div>
 
               <div className="pt-4 border-t border-border-light">

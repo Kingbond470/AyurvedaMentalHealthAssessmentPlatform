@@ -30,6 +30,7 @@ export default function GAD7Tab() {
   const [expandedItem, setExpandedItem] = useState<number | null>(null)
   const [editingItem, setEditingItem] = useState<number | null>(null)
   const [editData, setEditData] = useState<Partial<GAD7Item>>({})
+  const [editLang, setEditLang] = useState<'en' | 'hi' | 'mr'>('en')
 
   useEffect(() => {
     const fetchItems = async () => {
@@ -283,8 +284,8 @@ export default function GAD7Tab() {
       {/* Edit Modal */}
       {editingItem && editData && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-bg-surface rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-bg-section border-b border-border-light p-6 flex items-center justify-between">
+          <div className="bg-bg-surface rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto flex flex-col">
+            <div className="sticky top-0 bg-bg-section border-b border-border-light p-6 flex items-center justify-between shrink-0">
               <h2 className="text-xl font-display text-text-primary">
                 Edit GAD-7 Item {editingItem}
               </h2>
@@ -296,36 +297,65 @@ export default function GAD7Tab() {
               </button>
             </div>
 
-            <div className="p-6 space-y-6">
+            {/* Language Tabs */}
+            <div className="flex gap-1 px-6 pt-4 border-b border-border-light shrink-0">
+              {[
+                { code: 'en' as const, label: 'EN', key: 'questionEn' },
+                { code: 'hi' as const, label: 'HI', key: 'questionHi' },
+                { code: 'mr' as const, label: 'MR', key: 'questionMr' },
+              ].map((lang) => (
+                <button
+                  key={lang.code}
+                  onClick={() => setEditLang(lang.code)}
+                  className={`px-4 py-2 font-ui font-600 border-b-2 transition ${
+                    editLang === lang.code
+                      ? 'border-primary-500 text-text-primary'
+                      : 'border-transparent text-text-secondary hover:text-text-primary'
+                  }`}
+                >
+                  {lang.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-6 space-y-6">
               <div>
                 <label className="block text-sm font-ui font-600 text-text-primary mb-2">
-                  Question (English)
+                  Question ({editLang.toUpperCase()})
                 </label>
                 <input
                   type="text"
-                  value={editData.questionEn || ''}
-                  onChange={(e) => handleInputChange('questionEn', e.target.value)}
+                  value={
+                    editLang === 'en'
+                      ? (editData.questionEn || '')
+                      : editLang === 'hi'
+                        ? (editData.questionHi || '')
+                        : (editData.questionMr || '')
+                  }
+                  onChange={(e) => {
+                    const key = `question${editLang.toUpperCase()}`;
+                    handleInputChange(key, e.target.value);
+                  }}
                   className="w-full px-4 py-2 border border-border-light rounded-lg font-body focus:outline-none focus:border-primary-500 bg-[var(--bg-secondary)] text-[var(--text-primary)]"
                 />
               </div>
 
               <div className="space-y-3">
                 <h3 className="font-ui font-600 text-text-primary">Response Options</h3>
-                {[
-                  { key: 'option0En', label: 'Option 0' },
-                  { key: 'option1En', label: 'Option 1' },
-                  { key: 'option2En', label: 'Option 2' },
-                  { key: 'option3En', label: 'Option 3' },
-                ].map((opt) => (
-                  <input
-                    key={opt.key}
-                    type="text"
-                    placeholder={opt.label}
-                    value={(editData as any)[opt.key] || ''}
-                    onChange={(e) => handleInputChange(opt.key, e.target.value)}
-                    className="w-full px-4 py-2 border border-border-light rounded-lg font-body focus:outline-none focus:border-primary-500 bg-[var(--bg-secondary)] text-[var(--text-primary)]"
-                  />
-                ))}
+                {[0, 1, 2, 3].map((optNum) => {
+                  const langSuffix = editLang === 'en' ? 'En' : editLang === 'hi' ? 'Hi' : 'Mr';
+                  const optKey = `option${optNum}${langSuffix}` as keyof GAD7Item;
+                  return (
+                    <input
+                      key={`opt${optNum}`}
+                      type="text"
+                      placeholder={`Option ${optNum}`}
+                      value={(editData as any)[optKey] || ''}
+                      onChange={(e) => handleInputChange(optKey, e.target.value)}
+                      className="w-full px-4 py-2 border border-border-light rounded-lg font-body focus:outline-none focus:border-primary-500 bg-[var(--bg-secondary)] text-[var(--text-primary)]"
+                    />
+                  );
+                })}
               </div>
 
               <div className="flex gap-3 pt-4 border-t border-border-light">
