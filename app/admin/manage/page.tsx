@@ -5,10 +5,11 @@ import { useRouter } from 'next/navigation'
 import axios from 'axios'
 import MPPIItemsTab from '@/components/admin/MPPIItemsTab'
 import GAD7Tab from '@/components/admin/GAD7Tab'
+import SessionsTab from '@/components/admin/SessionsTab'
 import ReportsTab from '@/components/admin/ReportsTab'
 import SettingsTab from '@/components/admin/SettingsTab'
 
-type TabName = 'mppi' | 'gad7' | 'reports' | 'settings'
+type TabName = 'mppi' | 'gad7' | 'sessions' | 'reports' | 'settings'
 
 export default function AdminManagePage() {
   const router = useRouter()
@@ -26,7 +27,8 @@ export default function AdminManagePage() {
   const tabs: { name: TabName; label: string; icon: string }[] = [
     { name: 'mppi', label: 'MPPI Items (118)', icon: '📋' },
     { name: 'gad7', label: 'GAD-7', icon: '😟' },
-    { name: 'reports', label: 'Reports', icon: '📊' },
+    { name: 'sessions', label: 'Sessions', icon: '📊' },
+    { name: 'reports', label: 'Reports', icon: '📈' },
     { name: 'settings', label: 'Settings', icon: '⚙️' },
   ]
 
@@ -80,6 +82,7 @@ export default function AdminManagePage() {
       <main className="container-content px-4 py-8">
         {activeTab === 'mppi' && <MPPIItemsTab />}
         {activeTab === 'gad7' && <GAD7Tab />}
+        {activeTab === 'sessions' && <SessionsTab />}
         {activeTab === 'reports' && <ReportsTab />}
         {activeTab === 'settings' && <SettingsTab />}
       </main>
