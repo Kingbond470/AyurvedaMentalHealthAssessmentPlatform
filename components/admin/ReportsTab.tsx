@@ -56,7 +56,7 @@ export default function ReportsTab() {
   const handleExportCSV = async () => {
     setExporting(true)
     try {
-      const response = await axios.get('/api/admin/export/csv', {
+      const response = await axios.get('/api/export/csv', {
         responseType: 'blob',
       })
       const url = window.URL.createObjectURL(response.data)
