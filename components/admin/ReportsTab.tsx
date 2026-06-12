@@ -14,7 +14,8 @@ import {
   Pie,
   Cell,
 } from 'recharts'
-import { getLabel, Language } from '@/lib/localization'
+import { getLabel } from '@/lib/localization'
+import { useSessionStore } from '@/lib/store'
 
 interface Stats {
   totalSessions: number
@@ -37,7 +38,7 @@ export default function ReportsTab() {
   const [stats, setStats] = useState<Stats | null>(null)
   const [loading, setLoading] = useState(true)
   const [exporting, setExporting] = useState(false)
-  const [language, setLanguage] = useState<Language>('EN')
+  const language = useSessionStore((state) => state.language)
 
   useEffect(() => {
     const fetchStats = async () => {

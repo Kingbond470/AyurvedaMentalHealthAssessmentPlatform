@@ -3,7 +3,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import axios from 'axios'
-import { getLabel, Language } from '@/lib/localization'
+import { getLabel } from '@/lib/localization'
+import { useSessionStore } from '@/lib/store'
 import MPPIItemsTab from '@/components/admin/MPPIItemsTab'
 import GAD7Tab from '@/components/admin/GAD7Tab'
 import SessionsTab from '@/components/admin/SessionsTab'
@@ -15,7 +16,8 @@ type TabName = 'mppi' | 'gad7' | 'sessions' | 'reports' | 'settings'
 export default function AdminManagePage() {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<TabName>('mppi')
-  const [language, setLanguage] = useState<Language>('EN')
+  const language = useSessionStore((state) => state.language)
+  const setLanguage = useSessionStore((state) => state.setLanguage)
 
   const handleLogout = async () => {
     try {
@@ -48,12 +50,23 @@ export default function AdminManagePage() {
                 {getLabel('manageItems', language)}
               </p>
             </div>
-            <button
-              onClick={handleLogout}
-              className="px-4 py-2 bg-red-600/10 border border-red-600/20 rounded-lg font-ui font-600 text-red-600 hover:bg-red-600/20 transition"
-            >
-              {getLabel('logout', language)}
-            </button>
+            <div className="flex gap-2">
+              <select
+                value={language}
+                onChange={(e) => setLanguage(e.target.value as any)}
+                className="px-4 py-2 bg-bg-section border border-border-light rounded-lg font-ui font-600 text-text-primary hover:bg-border-light transition"
+              >
+                <option value="EN">{getLabel('english', language)}</option>
+                <option value="HI">{getLabel('hindi', language)}</option>
+                <option value="MR">{getLabel('marathi', language)}</option>
+              </select>
+              <button
+                onClick={handleLogout}
+                className="px-4 py-2 bg-red-600/10 border border-red-600/20 rounded-lg font-ui font-600 text-red-600 hover:bg-red-600/20 transition"
+              >
+                {getLabel('logout', language)}
+              </button>
+            </div>
           </div>
         </div>
       </header>

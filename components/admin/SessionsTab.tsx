@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
 import Link from 'next/link'
-import { getLabel, Language } from '@/lib/localization'
+import { getLabel } from '@/lib/localization'
+import { useSessionStore } from '@/lib/store'
 
 interface SessionData {
   id: string
@@ -31,7 +32,7 @@ export default function SessionsTab() {
   const [filterStatus, setFilterStatus] = useState<string>('COMPLETED')
   const [dateFrom, setDateFrom] = useState<string>('')
   const [dateTo, setDateTo] = useState<string>('')
-  const [language, setLanguage] = useState<Language>('EN')
+  const language = useSessionStore((state) => state.language)
 
   useEffect(() => {
     fetchSessions()
