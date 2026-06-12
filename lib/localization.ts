@@ -426,7 +426,8 @@ export const UI_LABELS = {
 }
 
 export function getLabel(key: keyof typeof UI_LABELS.EN, language: Language): string {
-  return UI_LABELS[language]?.[key as any] || UI_LABELS.EN[key as any] || key
+  const labels = UI_LABELS[language] as Record<string, string>
+  return labels?.[key] || UI_LABELS.EN[key] || key
 }
 
 export function getLocalizedName(
@@ -455,4 +456,15 @@ export function getLocalizedName(
   }
 
   return value
+}
+
+export function getLocalizedField(
+  item: Record<string, any>,
+  fieldPrefix: string,
+  language: Language
+): string | undefined {
+  // Map language to field suffix: EN -> En, HI -> Hi, MR -> Mr
+  const suffix = language === 'EN' ? 'En' : language === 'HI' ? 'Hi' : 'Mr'
+  const fieldName = `${fieldPrefix}${suffix}`
+  return item[fieldName] || undefined
 }
