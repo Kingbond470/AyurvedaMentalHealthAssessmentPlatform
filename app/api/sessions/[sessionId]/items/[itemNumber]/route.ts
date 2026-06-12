@@ -1,22 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { getSupabaseClient } from '@/lib/supabase'
 import { itemResponseSchema } from '@/lib/schemas'
-
-const prisma = new PrismaClient()
 
 export async function PUT(
   request: NextRequest,
   { params }: { params: { sessionId: string; itemNumber: string } }
 ) {
   try {
-    const session = await prisma.session.findUnique({
-      where: { id: params.sessionId },
-    })
-
-    if (!session) {
-      return NextResponse.json({ error: 'Session not found' }, { status: 404 })
-    }
-
     const body = await request.json()
     const itemNumber = parseInt(params.itemNumber)
 
@@ -32,51 +22,54 @@ export async function PUT(
       validated.probe2Score +
       validated.probe3Score
 
-    const itemResponse = await prisma.itemResponse.upsert({
-      where: {
-        sessionId_itemNumber: {
-          sessionId: params.sessionId,
-          itemNumber: validated.itemNumber,
-        },
-      },
-      create: {
-        sessionId: params.sessionId,
-        itemNumber: validated.itemNumber,
-        probe1Score: validated.probe1Score,
-        probe2Score: validated.probe2Score,
-        probe3Score: validated.probe3Score,
-        itemTotal,
-      },
-      update: {
-        probe1Score: validated.probe1Score,
-        probe2Score: validated.probe2Score,
-        probe3Score: validated.probe3Score,
-        itemTotal,
-      },
-    })
+    const supabase = getSupabaseClient()
 
-    // Check if MPPI complete (item 118 is last MPPI item)
+    // Check session exists
+    const { data: session, error: sessionError } = await supabase
+      .from('Session')
+      .select('id')
+      .eq('id', params.sessionId)
+      .single()
+
+    if (sessionError || !session) {
+      return NextResponse.json({ error: 'Session not found' }, { status: 404 })
+    }
+
+    // Upsert item response (insert or update)
+    const { data: itemResponse, error: itemError } = await supabase
+      .from('ItemResponse')
+      .upsert(
+        {
+          session_id: params.sessionId,
+          item_number: validated.itemNumber,
+          probe1_score: validated.probe1Score,
+          probe2_score: validated.probe2Score,
+          probe3_score: validated.probe3Score,
+          item_total: itemTotal,
+        },
+        { onConflict: 'session_id,item_number' }
+      )
+      .select()
+      .single()
+
+    if (itemError) throw itemError
+
+    // Check if MPPI complete (item 118 is last)
     let phaseTransition = null
     if (validated.itemNumber === 118) {
       // Auto-transition to GAD-7
-      await prisma.session.update({
-        where: { id: params.sessionId },
-        data: {
-          phase: 'GAD7',
-          currentItem: 0,
-          lastActivityAt: new Date(),
-        },
-      })
+      await supabase.from('Session').update({
+        phase: 'GAD7',
+        current_item: 0,
+        last_activity_at: new Date().toISOString(),
+      }).eq('id', params.sessionId)
       phaseTransition = 'GAD7'
     } else {
-      // Normal item progression
-      await prisma.session.update({
-        where: { id: params.sessionId },
-        data: {
-          currentItem: validated.itemNumber + 1,
-          lastActivityAt: new Date(),
-        },
-      })
+      // Normal progression
+      await supabase.from('Session').update({
+        current_item: validated.itemNumber + 1,
+        last_activity_at: new Date().toISOString(),
+      }).eq('id', params.sessionId)
     }
 
     return NextResponse.json(

@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { getSupabaseClient } from '@/lib/supabase'
 import { gad7ResponseSchema } from '@/lib/schemas'
 import { calculateGAD7Score, calculateSubtypeScores } from '@/lib/scoring'
-
-const prisma = new PrismaClient()
 
 function getImpairmentLabel(score: number): string {
   switch (score) {
@@ -25,14 +23,6 @@ export async function PUT(
   { params }: { params: { sessionId: string } }
 ) {
   try {
-    const session = await prisma.session.findUnique({
-      where: { id: params.sessionId },
-    })
-
-    if (!session) {
-      return NextResponse.json({ error: 'Session not found' }, { status: 404 })
-    }
-
     const body = await request.json()
     const validated = gad7ResponseSchema.parse(body)
 
@@ -48,114 +38,103 @@ export async function PUT(
 
     const { total, severity } = calculateGAD7Score(itemScores)
 
-    const gad7Response = await prisma.gAD7Response.upsert({
-      where: { sessionId: params.sessionId },
-      create: {
-        sessionId: params.sessionId,
-        item1Score: validated.item1Score,
-        item2Score: validated.item2Score,
-        item3Score: validated.item3Score,
-        item4Score: validated.item4Score,
-        item5Score: validated.item5Score,
-        item6Score: validated.item6Score,
-        item7Score: validated.item7Score,
-        impairmentScore: validated.impairmentScore,
-        totalScore: total,
-        severity,
-      },
-      update: {
-        item1Score: validated.item1Score,
-        item2Score: validated.item2Score,
-        item3Score: validated.item3Score,
-        item4Score: validated.item4Score,
-        item5Score: validated.item5Score,
-        item6Score: validated.item6Score,
-        item7Score: validated.item7Score,
-        impairmentScore: validated.impairmentScore,
-        totalScore: total,
-        severity,
-      },
-    })
+    const supabase = getSupabaseClient()
 
-    // Auto-trigger scoring when impairment is saved (GAD-7 complete)
+    // Check session exists
+    const { data: session, error: sessionError } = await supabase
+      .from('Session')
+      .select('id')
+      .eq('id', params.sessionId)
+      .single()
+
+    if (sessionError || !session) {
+      return NextResponse.json({ error: 'Session not found' }, { status: 404 })
+    }
+
+    // Upsert GAD-7 response
+    const { data: gad7Response, error: gad7Error } = await supabase
+      .from('GAD7Response')
+      .upsert(
+        {
+          session_id: params.sessionId,
+          item1_score: validated.item1Score,
+          item2_score: validated.item2Score,
+          item3_score: validated.item3Score,
+          item4_score: validated.item4Score,
+          item5_score: validated.item5Score,
+          item6_score: validated.item6Score,
+          item7_score: validated.item7Score,
+          impairment_score: validated.impairmentScore,
+          total_score: total,
+          severity,
+        },
+        { onConflict: 'session_id' }
+      )
+      .select()
+      .single()
+
+    if (gad7Error) throw gad7Error
+
+    // Auto-trigger scoring when impairment is saved
     let autoScored = false
     if (validated.impairmentScore !== undefined && validated.impairmentScore !== null) {
       try {
-        // Get all MPPI responses for scoring
-        const itemResponses = await prisma.itemResponse.findMany({
-          where: { sessionId: params.sessionId },
-        })
+        // Get all MPPI responses
+        const { data: itemResponses, error: itemError } = await supabase
+          .from('ItemResponse')
+          .select('*')
+          .eq('session_id', params.sessionId)
 
-        // Calculate MPPI scores
-        const {
-          subtypeRawScores,
-          subtypeMaxScores,
-          subtypePercentages,
-          predominantPrakriti,
-          secondaryPrakriti,
-          primaryCategory,
-        } = calculateSubtypeScores(itemResponses)
-
-        // Create result
-        await prisma.sessionResult.upsert({
-          where: { sessionId: params.sessionId },
-          create: {
-            sessionId: params.sessionId,
-            subtypeRawScores,
-            subtypeMaxScores,
+        if (!itemError && itemResponses) {
+          // Calculate MPPI scores
+          const {
             subtypePercentages,
             predominantPrakriti,
             secondaryPrakriti,
             primaryCategory,
-            gad7Total: total,
-            gad7Severity: severity,
-            gad7Impairment: getImpairmentLabel(validated.impairmentScore),
-          },
-          update: {
-            subtypeRawScores,
-            subtypeMaxScores,
-            subtypePercentages,
-            predominantPrakriti,
-            secondaryPrakriti,
-            primaryCategory,
-            gad7Total: total,
-            gad7Severity: severity,
-            gad7Impairment: getImpairmentLabel(validated.impairmentScore),
-          },
-        })
+          } = calculateSubtypeScores(itemResponses as any)
 
-        // Mark session as COMPLETED and phase as RESULTS
-        await prisma.session.update({
-          where: { id: params.sessionId },
-          data: {
-            status: 'COMPLETED',
-            phase: 'RESULTS',
-            completedAt: new Date(),
-            lastActivityAt: new Date(),
-          },
-        })
+          // Create SessionResult
+          await supabase.from('SessionResult').upsert(
+            {
+              session_id: params.sessionId,
+              subtype_percentages: subtypePercentages,
+              predominant_prakriti: predominantPrakriti,
+              secondary_prakriti: secondaryPrakriti,
+              primary_category: primaryCategory,
+              gad7_total: total,
+              gad7_severity: severity,
+              gad7_impairment: getImpairmentLabel(validated.impairmentScore),
+            },
+            { onConflict: 'session_id' }
+          )
+        }
+
+        // Mark session COMPLETED
+        await supabase.from('Session').update({
+          status: 'COMPLETED',
+          phase: 'RESULTS',
+          completed_at: new Date().toISOString(),
+          last_activity_at: new Date().toISOString(),
+        }).eq('id', params.sessionId)
 
         autoScored = true
       } catch (scoringError) {
         console.error('Scoring error:', scoringError)
         // Still mark as completed even if scoring fails
-        await prisma.session.update({
-          where: { id: params.sessionId },
-          data: {
-            status: 'COMPLETED',
-            phase: 'RESULTS',
-            completedAt: new Date(),
-            lastActivityAt: new Date(),
-          },
-        })
+        await supabase.from('Session').update({
+          status: 'COMPLETED',
+          phase: 'RESULTS',
+          completed_at: new Date().toISOString(),
+          last_activity_at: new Date().toISOString(),
+        }).eq('id', params.sessionId)
         autoScored = true
       }
     } else {
       // Just update activity
-      await prisma.session.update({
-        where: { id: params.sessionId },
-        data: { lastActivityAt: new Date() },
-      })
+      await supabase.from('Session').update({
+        last_activity_at: new Date().toISOString(),
+      }).eq('id', params.sessionId)
     }
 
     return NextResponse.json(

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import prisma from "@/lib/prisma"
+import { getSupabaseClient } from '@/lib/supabase'
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,26 +13,38 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const respondent = await prisma.respondent.findUnique({
-      where: { respondentCode },
-    })
+    const supabase = getSupabaseClient()
 
-    if (!respondent) {
+    // Find respondent
+    const { data: respondent, error: respondentError } = await supabase
+      .from('Respondent')
+      .select('id')
+      .eq('respondentCode', respondentCode)
+      .single()
+
+    if (respondentError || !respondent) {
       return NextResponse.json(
         { error: 'Respondent not found' },
         { status: 404 }
       )
     }
 
-    const session = await prisma.session.create({
-      data: {
-        respondentId: respondent.id,
-        practitionerName,
-        status: 'IN_PROGRESS',
-        phase: 'MPPI',
-        currentItem: 1,
-      },
-    })
+    // Create session
+    const { data: session, error: sessionError } = await supabase
+      .from('Session')
+      .insert([
+        {
+          respondent_id: respondent.id,
+          practitioner_name: practitionerName,
+          status: 'IN_PROGRESS',
+          phase: 'MPPI',
+          current_item: 1,
+        },
+      ])
+      .select()
+      .single()
+
+    if (sessionError) throw sessionError
 
     return NextResponse.json(session, { status: 201 })
   } catch (error) {
@@ -46,15 +58,15 @@ export async function POST(request: NextRequest) {
 
 export async function GET(_: NextRequest) {
   try {
-    const sessions = await prisma.session.findMany({
-      include: {
-        respondent: true,
-        result: true,
-      },
-      orderBy: { createdAt: 'desc' },
-    })
+    const supabase = getSupabaseClient()
+    const { data, error } = await supabase
+      .from('Session')
+      .select('*')
+      .order('created_at', { ascending: false })
 
-    return NextResponse.json(sessions, { status: 200 })
+    if (error) throw error
+
+    return NextResponse.json(data || [], { status: 200 })
   } catch (error) {
     console.error('Session fetch error:', error)
     return NextResponse.json(

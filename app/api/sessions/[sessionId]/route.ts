@@ -1,28 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { getSupabaseClient } from '@/lib/supabase'
 
 export async function GET(
   _: NextRequest,
   { params }: { params: { sessionId: string } }
 ) {
   try {
-    const session = await prisma.session.findUnique({
-      where: { id: params.sessionId },
-      include: {
-        respondent: true,
-        itemResponses: true,
-        gad7Response: true,
-        result: true,
-      },
-    })
+    const supabase = getSupabaseClient()
+    const { data, error } = await supabase
+      .from('Session')
+      .select('*')
+      .eq('id', params.sessionId)
+      .single()
 
-    if (!session) {
+    if (error || !data) {
       return NextResponse.json({ error: 'Session not found' }, { status: 404 })
     }
 
-    return NextResponse.json(session, { status: 200 })
+    return NextResponse.json(data, { status: 200 })
   } catch (error) {
     console.error('Session fetch error:', error)
     return NextResponse.json(
@@ -37,32 +32,30 @@ export async function PATCH(
   { params }: { params: { sessionId: string } }
 ) {
   try {
-    const session = await prisma.session.findUnique({
-      where: { id: params.sessionId },
-    })
+    const body = await request.json()
+    const { status, currentSection, currentItem } = body
 
-    if (!session) {
+    const supabase = getSupabaseClient()
+
+    const updateData: any = {
+      last_activity_at: new Date().toISOString(),
+    }
+    if (status) updateData.status = status
+    if (currentSection !== undefined) updateData.current_section = currentSection
+    if (currentItem !== undefined) updateData.current_item = currentItem
+
+    const { data, error } = await supabase
+      .from('Session')
+      .update(updateData)
+      .eq('id', params.sessionId)
+      .select()
+      .single()
+
+    if (error) {
       return NextResponse.json({ error: 'Session not found' }, { status: 404 })
     }
 
-    const body = await request.json()
-    const {
-      status,
-      currentSection,
-      currentItem,
-    } = body
-
-    const updated = await prisma.session.update({
-      where: { id: params.sessionId },
-      data: {
-        ...(status && { status }),
-        ...(currentSection !== undefined && { currentSection }),
-        ...(currentItem !== undefined && { currentItem }),
-        lastActivityAt: new Date(),
-      },
-    })
-
-    return NextResponse.json(updated, { status: 200 })
+    return NextResponse.json(data, { status: 200 })
   } catch (error) {
     console.error('Session update error:', error)
     return NextResponse.json(

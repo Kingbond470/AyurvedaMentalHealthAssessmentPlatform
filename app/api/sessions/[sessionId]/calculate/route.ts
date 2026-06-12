@@ -1,24 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { getSupabaseClient } from '@/lib/supabase'
 import {
   calculateSubtypeScores,
   calculateGAD7Score,
 } from '@/lib/scoring'
-
-const prisma = new PrismaClient()
 
 export async function POST(
   _: NextRequest,
   { params }: { params: { sessionId: string } }
 ) {
   try {
-    const session = await prisma.session.findUnique({
-      where: { id: params.sessionId },
-      include: {
-        itemResponses: true,
-        gad7Response: true,
-      },
-    })
+    const supabase = getSupabaseClient()
+
+    // Get session with responses
+    const [{ data: session }, { data: itemResponses }, { data: gad7Response }] = await Promise.all([
+      supabase
+        .from('Session')
+        .select('*')
+        .eq('id', params.sessionId)
+        .single(),
+      supabase
+        .from('ItemResponse')
+        .select('*')
+        .eq('session_id', params.sessionId),
+      supabase
+        .from('GAD7Response')
+        .select('*')
+        .eq('session_id', params.sessionId)
+        .single(),
+    ])
 
     if (!session) {
       return NextResponse.json({ error: 'Session not found' }, { status: 404 })
@@ -26,38 +36,34 @@ export async function POST(
 
     // Calculate MPPI scores
     const mppiScores = calculateSubtypeScores(
-      session.itemResponses.map((ir) => ({
-        itemNumber: ir.itemNumber,
-        probe1Score: ir.probe1Score,
-        probe2Score: ir.probe2Score,
-        probe3Score: ir.probe3Score,
+      (itemResponses || []).map((ir: any) => ({
+        itemNumber: ir.item_number,
+        probe1Score: ir.probe1_score,
+        probe2Score: ir.probe2_score,
+        probe3Score: ir.probe3_score,
       }))
     )
 
     // Calculate GAD-7 scores
-    let gad7Result: {
-      total: number
-      severity: 'MINIMAL' | 'MILD' | 'MODERATE' | 'SEVERE'
-      impairment: string
-    } = {
+    let gad7Result: any = {
       total: 0,
       severity: 'MINIMAL',
       impairment: 'Not difficult',
     }
 
-    if (session.gad7Response) {
+    if (gad7Response) {
       const gad7Scores = [
-        session.gad7Response.item1Score,
-        session.gad7Response.item2Score,
-        session.gad7Response.item3Score,
-        session.gad7Response.item4Score,
-        session.gad7Response.item5Score,
-        session.gad7Response.item6Score,
-        session.gad7Response.item7Score,
+        gad7Response.item1_score,
+        gad7Response.item2_score,
+        gad7Response.item3_score,
+        gad7Response.item4_score,
+        gad7Response.item5_score,
+        gad7Response.item6_score,
+        gad7Response.item7_score,
       ]
 
       const gad7Calc = calculateGAD7Score(gad7Scores)
-      const impairmentMap = {
+      const impairmentMap: any = {
         0: 'Not difficult',
         1: 'Somewhat difficult',
         2: 'Very difficult',
@@ -67,49 +73,36 @@ export async function POST(
       gad7Result = {
         total: gad7Calc.total,
         severity: gad7Calc.severity,
-        impairment:
-          impairmentMap[
-            session.gad7Response.impairmentScore as keyof typeof impairmentMap
-          ] || 'Unknown',
+        impairment: impairmentMap[gad7Response.impairment_score] || 'Unknown',
       }
     }
 
     // Create or update session result
-    const result = await prisma.sessionResult.upsert({
-      where: { sessionId: params.sessionId },
-      create: {
-        sessionId: params.sessionId,
-        subtypeRawScores: mppiScores.subtypeRawScores,
-        subtypeMaxScores: mppiScores.subtypeMaxScores,
-        subtypePercentages: mppiScores.subtypePercentages,
-        predominantPrakriti: mppiScores.predominantPrakriti,
-        secondaryPrakriti: mppiScores.secondaryPrakriti,
-        primaryCategory: mppiScores.primaryCategory,
-        gad7Total: gad7Result.total,
-        gad7Severity: gad7Result.severity,
-        gad7Impairment: gad7Result.impairment,
-      },
-      update: {
-        subtypeRawScores: mppiScores.subtypeRawScores,
-        subtypeMaxScores: mppiScores.subtypeMaxScores,
-        subtypePercentages: mppiScores.subtypePercentages,
-        predominantPrakriti: mppiScores.predominantPrakriti,
-        secondaryPrakriti: mppiScores.secondaryPrakriti,
-        primaryCategory: mppiScores.primaryCategory,
-        gad7Total: gad7Result.total,
-        gad7Severity: gad7Result.severity,
-        gad7Impairment: gad7Result.impairment,
-      },
-    })
+    const { data: result, error: resultError } = await supabase
+      .from('SessionResult')
+      .upsert(
+        {
+          session_id: params.sessionId,
+          subtype_percentages: mppiScores.subtypePercentages,
+          predominant_prakriti: mppiScores.predominantPrakriti,
+          secondary_prakriti: mppiScores.secondaryPrakriti,
+          primary_category: mppiScores.primaryCategory,
+          gad7_total: gad7Result.total,
+          gad7_severity: gad7Result.severity,
+          gad7_impairment: gad7Result.impairment,
+        },
+        { onConflict: 'session_id' }
+      )
+      .select()
+      .single()
+
+    if (resultError) throw resultError
 
     // Mark session as completed
-    await prisma.session.update({
-      where: { id: params.sessionId },
-      data: {
-        status: 'COMPLETED',
-        completedAt: new Date(),
-      },
-    })
+    await supabase.from('Session').update({
+      status: 'COMPLETED',
+      completed_at: new Date().toISOString(),
+    }).eq('id', params.sessionId)
 
     return NextResponse.json(result, { status: 200 })
   } catch (error) {

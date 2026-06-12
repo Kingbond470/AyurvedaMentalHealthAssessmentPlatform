@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import prisma from "@/lib/prisma"
+import { getSupabaseClient } from '@/lib/supabase'
 import { respondentSchema } from '@/lib/schemas'
 
 export async function POST(request: NextRequest) {
@@ -10,23 +10,30 @@ export async function POST(request: NextRequest) {
     const respondentCode =
       validated.respondentCode || `RESP-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 
-    const respondent = await prisma.respondent.create({
-      data: {
-        respondentCode,
-        age: validated.age,
-        gender: validated.gender,
-        education: validated.education,
-        occupation: validated.occupation,
-        name: validated.name,
-        phone: validated.phone,
-        city: validated.city,
-        state: validated.state,
-        country: validated.country,
-        language: validated.language,
-      },
-    })
+    const supabase = getSupabaseClient()
+    const { data, error } = await supabase
+      .from('Respondent')
+      .insert([
+        {
+          respondentCode,
+          age: validated.age,
+          gender: validated.gender,
+          education: validated.education,
+          occupation: validated.occupation,
+          name: validated.name,
+          phone: validated.phone,
+          city: validated.city,
+          state: validated.state,
+          country: validated.country,
+          language: validated.language,
+        },
+      ])
+      .select()
+      .single()
 
-    return NextResponse.json(respondent, { status: 201 })
+    if (error) throw error
+
+    return NextResponse.json(data, { status: 201 })
   } catch (error) {
     console.error('Respondent creation error:', error)
     return NextResponse.json(
