@@ -6,11 +6,12 @@ const API_URL = 'http://localhost:3000/api';
 
 function makeRequest(path, method = 'GET', body = null) {
   return new Promise((resolve, reject) => {
-    const url = new URL(path, API_URL);
+    const fullPath = `/api${path}`;
+    const url = new URL(fullPath, API_URL);
     const options = {
-      hostname: url.hostname,
-      port: url.port,
-      path: url.pathname + url.search,
+      hostname: 'localhost',
+      port: 3000,
+      path: fullPath,
       method,
       headers: {
         'Content-Type': 'application/json',
@@ -63,13 +64,14 @@ async function testFlow() {
     }
 
     const respondentId = respondentRes.data.id;
+    const respondentCode = respondentRes.data.respondent_code;
     console.log(`✓ Respondent created: ${respondentId}\n`);
 
     // Step 2: Create Session
     console.log('Step 2: Creating Session...');
     const sessionRes = await makeRequest('/sessions', 'POST', {
-      respondent_id: respondentId,
-      practitioner_name: 'Dr. Sharma',
+      respondentCode: respondentCode,
+      practitionerName: 'Dr. Sharma',
     });
 
     if (sessionRes.status !== 201) {

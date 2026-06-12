@@ -55,7 +55,7 @@ export const gad7ResponseSchema = z.object({
   item5Score: z.number().int().min(0).max(3),
   item6Score: z.number().int().min(0).max(3),
   item7Score: z.number().int().min(0).max(3),
-  impairmentScore: z.number().int().min(0).max(3),
+  impairmentScore: z.number().int().min(0).max(3).optional(),
 })
 
 export type GAD7ResponseInput = z.infer<typeof gad7ResponseSchema>

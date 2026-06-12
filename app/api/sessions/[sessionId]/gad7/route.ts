@@ -52,24 +52,26 @@ export async function PUT(
     }
 
     // Upsert GAD-7 response
+    const insertData: any = {
+      session_id: params.sessionId,
+      item1_score: validated.item1Score,
+      item2_score: validated.item2Score,
+      item3_score: validated.item3Score,
+      item4_score: validated.item4Score,
+      item5_score: validated.item5Score,
+      item6_score: validated.item6Score,
+      item7_score: validated.item7Score,
+      total_score: total,
+      severity,
+    }
+
+    if (validated.impairmentScore !== undefined) {
+      insertData.impairment_score = validated.impairmentScore
+    }
+
     const { data: gad7Response, error: gad7Error } = await supabase
       .from('gad7_response')
-      .upsert(
-        {
-          session_id: params.sessionId,
-          item1_score: validated.item1Score,
-          item2_score: validated.item2Score,
-          item3_score: validated.item3Score,
-          item4_score: validated.item4Score,
-          item5_score: validated.item5Score,
-          item6_score: validated.item6Score,
-          item7_score: validated.item7Score,
-          impairment_score: validated.impairmentScore,
-          total_score: total,
-          severity,
-        },
-        { onConflict: 'session_id' }
-      )
+      .upsert(insertData, { onConflict: 'session_id' })
       .select()
       .single()
 
@@ -111,7 +113,7 @@ export async function PUT(
         }
 
         // Mark session COMPLETED
-        await supabase.from('Session').update({
+        await supabase.from('session').update({
           status: 'COMPLETED',
           phase: 'RESULTS',
           completed_at: new Date().toISOString(),
@@ -122,7 +124,7 @@ export async function PUT(
       } catch (scoringError) {
         console.error('Scoring error:', scoringError)
         // Still mark as completed even if scoring fails
-        await supabase.from('Session').update({
+        await supabase.from('session').update({
           status: 'COMPLETED',
           phase: 'RESULTS',
           completed_at: new Date().toISOString(),
