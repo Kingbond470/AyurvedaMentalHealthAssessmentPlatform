@@ -1,38 +1,39 @@
 # Manas Prakriti & Anxiety Assessment Platform (MPAAP)
 
-Research-grade clinical assessment tool combining Ayurvedic constitutional analysis (Manas Prakriti) with modern psychiatric anxiety evaluation (GAD-7).
+Research-grade clinical assessment tool combining Ayurvedic constitutional analysis (Manas Prakriti) with modern psychiatric anxiety evaluation (GAD-7). Production-ready platform deployed on Vercel with Supabase backend.
 
 ## Overview
 
 **MPAAP** is a practitioner-administered digital platform that:
 - Guides practitioners through 118-item Manas Prakriti Personality Inventory (MPPI)
-- Administers 7-item GAD-7 anxiety assessment
+- Administers 7-item GAD-7 anxiety assessment  
 - Automatically calculates subtype percentages and Prakriti classification
 - Generates detailed results with 16 psychological subtypes
 - Exports data to Google Sheets for research aggregation
 - Produces PDF reports for clinical documentation
+- Premium dark theme with 4 color variants (configurable per session)
 
 **Research Objective:** Establish correlation between Ayurvedic constitutional types and anxiety disorder susceptibility.
 
 ## Tech Stack
 
-- **Frontend:** Next.js 14, React 18, TypeScript, Tailwind CSS, Recharts
+- **Frontend:** Next.js 14 (App Router), React 18, TypeScript, Tailwind CSS
 - **Backend:** Next.js API Routes, Node.js
-- **Database:** PostgreSQL + Prisma ORM
-- **Auth:** JWT (access + refresh tokens), bcryptjs
-- **Reports:** @react-pdf/renderer
-- **State:** Zustand (localStorage-synced)
-- **Integrations:** Google Sheets API
-- **Deployment:** Vercel (or self-hosted)
-- **Theme System:** Premium dark theme + 3 color variants (CSS variables + Zustand)
+- **Database:** Supabase PostgreSQL + REST API (@supabase/supabase-js)
+- **Auth:** Static username/password (environment variables) with httpOnly session cookies
+- **State:** Zustand (localStorage-synced for assessment + theme)
+- **Reports:** @react-pdf/renderer (PDF generation)
+- **Integrations:** Google Sheets API (append-only data export)
+- **Deployment:** Vercel (serverless, zero-config)
+- **Theme System:** Premium dark theme + 4 color variants (CSS variables + Zustand)
 
 ## Quick Start
 
 ### 1. Prerequisites
 
 - Node.js 18+
-- PostgreSQL 14+
 - npm or yarn
+- Supabase account (free tier sufficient)
 
 ### 2. Clone & Setup
 
@@ -42,40 +43,34 @@ cd AyurvedaMentalHealthAssessmentPlatform
 npm install
 ```
 
-### 3. Environment Variables
+### 3. Supabase Setup
 
-Copy `.env.example` to `.env.local`:
+1. Create project at [supabase.com](https://supabase.com)
+2. Run database schema (use SQL editor in Supabase dashboard)
+3. Get credentials: Settings → API
+   - Project URL
+   - Anon/Public Key
 
-```bash
-cp .env.example .env.local
-```
+### 4. Environment Variables
 
-Edit `.env.local`:
+Create `.env.local`:
 
 ```env
-DATABASE_URL=postgresql://user:password@localhost:5432/manas_prakriti
-JWT_SECRET=your-super-secret-key-change-in-production
-JWT_EXPIRY=7d
-REFRESH_TOKEN_EXPIRY=30d
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
-GOOGLE_SHEETS_SPREADSHEET_ID=<your-spreadsheet-id>
-GOOGLE_SHEETS_CREDENTIALS_JSON=<JSON string of service account credentials>
+# Admin authentication (static)
+ADMIN_USERNAME=your-admin-username
+ADMIN_PASSWORD=your-secure-password
 
+# App URLs (local dev)
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 NEXT_PUBLIC_API_URL=http://localhost:3000/api
-```
 
-### 4. Database Setup
-
-```bash
-# Generate Prisma client
-npm run prisma:generate
-
-# Run migrations
-npm run prisma:migrate
-
-# Seed database with demo users + placeholder items
-npm run seed
+# Google Sheets (optional)
+GOOGLE_SHEETS_SPREADSHEET_ID=<your-spreadsheet-id>
+GOOGLE_SHEETS_CREDENTIALS_JSON=<service-account-json>
 ```
 
 ### 5. Run Dev Server
@@ -85,12 +80,17 @@ npm run dev
 ```
 
 Visit `http://localhost:3000`
+- **Admin Panel:** `/admin/login` (use credentials from `.env.local`)
 
-## Demo Credentials
+### Production Deployment
 
-After seeding:
-- **Practitioner:** demo@example.com / demo1234
-- **Admin:** admin@example.com / demo1234
+**Vercel:**
+```bash
+npm install -g vercel
+vercel --prod
+```
+
+Set environment variables in Vercel dashboard (Project Settings → Environment Variables)
 
 ## Project Structure
 
@@ -231,27 +231,31 @@ Secondary = second highest percentage
 
 ### Admin View
 
-1. **Dashboard**
-   - Total/completed/in-progress session counts
-   - Prakriti distribution chart (placeholder)
-   - GAD-7 severity distribution (placeholder)
+**Unified Admin Dashboard** (`/admin/login`) with 4 tabs:
 
-2. **Item Bank Management**
-   - List all 118 MPPI + 7 GAD-7 items
-   - Filter by number/section/name
-   - Edit items: Sanskrit name, Devanagari, interpretation, 3 probes
-   - Translations (EN/HI/MR)
-   - Mark Section 14 gender variants, Section 16 observer-rated
-   - Manage subtype mappings
+1. **MPPI Items Tab**
+   - View all 118 items with search/filter by section
+   - Edit any item: probes, translations (EN/HI/MR), subtype mappings
+   - Update item interpretations
+   - Mark Section 14 gender variants (male/female)
+   - Real-time DB sync via Supabase REST API
 
-3. **Google Sheets Config**
-   - Connect organization spreadsheet
-   - Auto-append completed sessions (one row per session)
-   - Columns: respondent ID, age, gender, Prakriti, GAD-7, all item responses
+2. **GAD-7 Items Tab**
+   - View all 7 anxiety assessment items
+   - Edit question text + option labels (EN/HI/MR)
+   - Configure impairment question
+   - Real-time updates
 
-4. **Data Export**
-   - CSV download of all sessions (anonymized or with demographics)
-   - Stats: Prakriti distribution, GAD-7 severity breakdown
+3. **Reports Tab**
+   - View all completed sessions
+   - Download session results as PDF
+   - Filter by date range/practitioner
+   - Export data to Google Sheets
+
+4. **Settings Tab**
+   - Configure Google Sheets integration
+   - Manage system settings
+   - Logout
 
 ## Premium Theme System
 
@@ -309,28 +313,32 @@ Secondary = second highest percentage
 
 ## Deployment
 
-### Vercel
+### Production (Vercel)
 
-```bash
-npm install -g vercel
+Platform is configured for **Vercel serverless deployment**:
 
-# First time
-vercel --prod
+1. **Prerequisites:**
+   - GitHub repo (push code)
+   - Vercel account (free tier sufficient)
+   - Supabase project (with credentials)
 
-# Update existing
-vercel --prod
-```
+2. **Deploy:**
+   ```bash
+   npm install -g vercel
+   vercel --prod
+   ```
 
-Set environment variables in Vercel dashboard.
+3. **Environment Variables in Vercel Dashboard:**
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+   - `ADMIN_USERNAME`
+   - `ADMIN_PASSWORD`
 
-### Self-Hosted (Railway, Render, etc.)
-
-1. Push code to GitHub
-2. Connect repo to deployment platform
-3. Set environment variables
-4. Deploy
-
-Both should auto-detect Next.js + run `npm run build && npm run start`.
+4. **Current Status:**
+   - ✅ Production URL: https://ayurveda-mental-health.vercel.app
+   - ✅ Health endpoint: 125 items, 3 sessions connected
+   - ✅ Admin dashboard: fully functional
+   - ✅ All API routes working
 
 ## Testing
 

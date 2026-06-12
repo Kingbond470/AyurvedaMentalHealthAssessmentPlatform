@@ -158,32 +158,71 @@ Stored in `ITEM_SUBTYPE_MAP` constant (not DB):
 
 ## Authentication
 
-### JWT Pattern
+### Static Username/Password + Session Cookies
 
 ```typescript
-// Login
-POST /api/auth/login
-  → verify email + password
-  → generate accessToken (exp: 7d) + refreshToken (exp: 30d)
-  → return both tokens
+// Admin Login
+POST /api/admin/auth/login
+  → verify username + password against env vars (ADMIN_USERNAME, ADMIN_PASSWORD)
+  → set httpOnly session cookie (admin_session, 24h expiry)
+  → redirect to /admin/manage
 
-// Protected routes
-Authorization: Bearer <accessToken>
-  → verifyToken() extracts payload (userId, email, role)
-  → middleware checks role (PRACTITIONER | ADMIN)
+// Protected Routes
+middleware.ts checks:
+  → if route /admin/* (UI): require admin_session cookie
+  → if route /api/admin/*: allow (API routes don't check auth yet)
+  → if route /api/*: allow (public endpoints)
 
-// Token refresh
-POST /api/auth/refresh
-  → validate refreshToken
-  → issue new accessToken
+// Logout
+POST /api/admin/auth/logout
+  → clear admin_session cookie
+  → redirect to /admin/login
 ```
 
-### Why Not OAuth?
+### Design Rationale
 
-- OAuth adds complexity (Google/Apple login setup)
-- For research platform, simple email/password sufficient
-- Admin creates accounts (no self-registration)
-- Single org, not multi-tenant
+- **No user database:** Single org, no self-registration → env var credentials sufficient
+- **httpOnly cookies:** Secure against XSS (cannot be read by JavaScript)
+- **Middleware:** Protects UI pages while allowing API routes through (future: add API auth)
+- **No JWT complexity:** Not multi-tenant, not multi-user → simple credential check works
+
+## Database Access Pattern
+
+### Supabase REST API (Current - Production)
+
+**Why REST API instead of direct PostgreSQL?**
+- Vercel serverless cannot maintain long-lived database connections (port 5432/6543 unreachable)
+- REST API avoids connection pooling overhead
+- @supabase/supabase-js provides built-in error handling + retries
+- Scales effortlessly (no connection limit concerns)
+
+**Implementation:**
+```typescript
+// lib/supabase.ts - Lazy initialization
+export function getSupabaseClient() {
+  if (supabaseClient) return supabaseClient
+  
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+  
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error('Missing Supabase environment variables')
+  }
+  
+  supabaseClient = createClient(supabaseUrl, supabaseKey)
+  return supabaseClient
+}
+```
+
+**Lazy initialization prevents build-time errors:** Only initializes when route is called (runtime), not at module load (build time).
+
+**Routes using REST API:**
+- `/api/health` → count items + sessions
+- `/api/admin/items` → list + create items
+- `/api/admin/items/[itemNumber]` → fetch + update item
+- `/api/admin/gad7-items` → list + create GAD-7 items
+
+**Next: Migrate remaining routes** (respondents, sessions, scoring) to REST API pattern.
 
 ## Frontend State Management (Zustand)
 
@@ -374,25 +413,33 @@ See `THEME_SYSTEM.md` for:
 
 ### Status
 
-🚧 **Phase 1 (Infrastructure)** - In Progress
-- [ ] CSS variables in globals.css
-- [ ] ThemeProvider component
-- [ ] useThemeStore Zustand hook
-- [ ] ThemeToggle button
+✅ **Phase 1 (Infrastructure)** - COMPLETE
+- [x] CSS variables in globals.css (4 theme variants defined)
+- [x] ThemeProvider component (syncs store to DOM data-theme)
+- [x] useThemeStore Zustand hook (localStorage persistence)
+- [x] ThemeToggle button (available on all pages)
+- [x] Deployed to production (all pages using CSS variables)
 
-## Known Limitations & TODOs
+## Implementation Status
 
-### Current (V1)
-- ✅ Core assessment + scoring
-- ✅ PDF reports
-- ✅ Google Sheets export
-- ✅ Admin item management
+### Production Ready (V1.0)
+- ✅ Core assessment + scoring (118 MPPI + 7 GAD-7 items)
+- ✅ PDF reports (@react-pdf/renderer)
+- ✅ Google Sheets export (append-only, service account auth)
+- ✅ Admin item management (4-tab dashboard)
+- ✅ Supabase REST API integration (health, items, gad7 endpoints)
+- ✅ Static admin authentication (env var credentials + session cookies)
+- ✅ Premium theme system (4 color variants, persistent)
+- ✅ Vercel deployment (production URL working, 125 items loaded)
 
-### Missing (V2 candidates)
+### In Progress / TODO (V1.1+)
+- 🚧 Complete REST API migration (respondents, sessions, scoring routes)
+- 🚧 Respondent registration UI (demographics collection flow)
+- 🚧 Session management endpoints (create, list, update status)
+- ⬜ Multi-language UI labels (currently: EN only, questions: EN/HI/MR)
 - ⬜ Bulk item import (CSV/Excel)
 - ⬜ Recommendations engine (prakriti-based lifestyle advice)
 - ⬜ Statistical analysis module (ANOVA, correlation testing)
-- ⬜ Multi-language UI labels (currently: EN only, questions: EN/HI/MR)
 - ⬜ Mobile native app (iOS/Android)
 - ⬜ Real-time sync across devices
 - ⬜ Video interview integration
@@ -412,11 +459,12 @@ See `THEME_SYSTEM.md` for:
 ### Adding a New Feature
 
 1. **Plan:** Sketch scope (data model changes? API additions? UI changes?)
-2. **Database:** Update `prisma/schema.prisma` if needed → `npm run prisma:migrate`
-3. **API:** Add routes in `/api/`
+2. **Database:** Update Supabase schema via SQL editor (no Prisma needed)
+3. **API:** Add routes in `/app/api/` using `getSupabaseClient()` from `lib/supabase.ts`
 4. **Frontend:** Add components + pages in `/app/`
 5. **Test:** Manual flow test (login → assess → results)
 6. **Commit:** Descriptive message with "Co-Authored-By" footer
+7. **Deploy:** Push to GitHub → Vercel auto-deploys (no manual build needed)
 
 ### Changing the Scoring Algorithm
 
@@ -429,25 +477,52 @@ See `THEME_SYSTEM.md` for:
 
 ### Adding a New Language
 
-1. Add language code to `Language` enum in `prisma/schema.prisma`
-2. Update Item schema: add `probe1QuestionXX`, `probe1Score0XX`, etc. for each probe
-3. Add translation fonts to Tailwind (if needed)
-4. Admin panel: add language selection to item edit form
-5. Update i18next config (if using)
+1. Add translation columns to Supabase `Item` table (if not already present)
+   - `core_probe_XX`, `probe1_question_XX`, `probe1_score_0_XX`, etc.
+2. Add translation fonts to Tailwind (if needed)
+   - Example: `Noto Sans Devanagari` for Hindi/Marathi
+3. Update admin panel item edit form (add language selection dropdowns)
+4. Populate translations via admin dashboard
+5. Frontend: Update question display logic to fallback to EN if translation missing
+
+## Current Deployment Status
+
+**Production URL:** https://ayurveda-mental-health.vercel.app
+
+✅ **Verified Working:**
+- Health endpoint: `/api/health` → 125 items, 3 sessions
+- Items API: `/api/admin/items` → returns all 125 MPPI items
+- GAD-7 API: `/api/admin/gad7-items` → returns 7 items
+- Admin login: `/admin/login` (credentials: ADMIN_USERNAME + ADMIN_PASSWORD env vars)
+- Admin dashboard: `/admin/manage` (4 tabs: MPPI, GAD-7, Reports, Settings)
+- Theme system: All pages using CSS variables (4 themes available)
+
+**Environment Variables (Vercel):**
+- ✅ NEXT_PUBLIC_SUPABASE_URL
+- ✅ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
+- ✅ ADMIN_USERNAME
+- ✅ ADMIN_PASSWORD
+
+**Recent Fixes:**
+- Fixed Supabase client lazy initialization (prevents build-time errors)
+- Migrated `/api/health`, `/api/admin/items`, `/api/admin/gad7-items` to REST API
+- Deployment successful with 0 errors
 
 ## Production Checklist
 
-Before launching to practitioners:
+Pre-launch to practitioners:
 
-- [ ] JWT_SECRET changed from dev value
-- [ ] Database backed up
+- [x] Database backend (Supabase PostgreSQL + REST API)
+- [x] Admin authentication (static credentials in env vars)
+- [x] All 118 MPPI items populated
+- [x] 7 GAD-7 items populated
+- [x] Health endpoint verified (items + sessions querying)
 - [ ] Google Sheets credentials tested
-- [ ] All 118 items populated with content
 - [ ] Demo sessions completed + results verified
 - [ ] Practitioners trained on system
 - [ ] Troubleshooting doc shared
 - [ ] Error logging configured (e.g., Sentry)
-- [ ] Database connection pooling configured (for high load)
+- [ ] Complete REST API migration (respondents, sessions routes)
 
 ## References
 
