@@ -1,0 +1,10 @@
+{
+  "project_id": "zixydcrxwdpshefagxpn",
+  "db": {
+    "shadow_database_url": ""
+  },
+  "api": {
+    "enabled": true,
+    "max_rows": 1000
+  }
+}

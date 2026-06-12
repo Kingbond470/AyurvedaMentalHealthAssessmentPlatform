@@ -8,7 +8,7 @@ export async function GET(
   try {
     const supabase = getSupabaseClient()
     const { data, error } = await supabase
-      .from('Session')
+      .from('session')
       .select('*')
       .eq('id', params.sessionId)
       .single()
@@ -45,7 +45,7 @@ export async function PATCH(
     if (currentItem !== undefined) updateData.current_item = currentItem
 
     const { data, error } = await supabase
-      .from('Session')
+      .from('session')
       .update(updateData)
       .eq('id', params.sessionId)
       .select()

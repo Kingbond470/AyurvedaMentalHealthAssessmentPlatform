@@ -26,7 +26,7 @@ export async function PUT(
 
     // Check session exists
     const { data: session, error: sessionError } = await supabase
-      .from('Session')
+      .from('session')
       .select('id')
       .eq('id', params.sessionId)
       .single()
@@ -37,7 +37,7 @@ export async function PUT(
 
     // Upsert item response (insert or update)
     const { data: itemResponse, error: itemError } = await supabase
-      .from('ItemResponse')
+      .from('item_response')
       .upsert(
         {
           session_id: params.sessionId,

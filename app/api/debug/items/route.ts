@@ -1,21 +1,24 @@
 import { NextResponse } from 'next/server'
-import prisma from "@/lib/prisma"
+import { getSupabaseClient } from '@/lib/supabase'
 
 export async function GET() {
   try {
-    const items = await prisma.item.findMany({
-      take: 5,
-      orderBy: { itemNumber: 'asc' },
-    })
+    const supabase = getSupabaseClient()
 
-    const totalCount = await prisma.item.count()
+    const { data: items, error: itemsError, count } = await supabase
+      .from('item')
+      .select('item_number, predictor_sanskrit, section', { count: 'exact' })
+      .order('item_number', { ascending: true })
+      .limit(5)
+
+    if (itemsError) throw itemsError
 
     return NextResponse.json({
       status: 'success',
-      totalItemsInDatabase: totalCount,
-      sampleItems: items.map(i => ({
-        itemNumber: i.itemNumber,
-        predictor: i.predictorSanskrit,
+      totalItemsInDatabase: count || 0,
+      sampleItems: items?.map(i => ({
+        itemNumber: i.item_number,
+        predictor: i.predictor_sanskrit,
         section: i.section,
       })),
     })

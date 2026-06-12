@@ -42,7 +42,7 @@ export async function PUT(
 
     // Check session exists
     const { data: session, error: sessionError } = await supabase
-      .from('Session')
+      .from('session')
       .select('id')
       .eq('id', params.sessionId)
       .single()
@@ -53,7 +53,7 @@ export async function PUT(
 
     // Upsert GAD-7 response
     const { data: gad7Response, error: gad7Error } = await supabase
-      .from('GAD7Response')
+      .from('gad7_response')
       .upsert(
         {
           session_id: params.sessionId,

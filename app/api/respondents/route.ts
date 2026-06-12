@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
 
     const supabase = getSupabaseClient()
     const { data, error } = await supabase
-      .from('Respondent')
+      .from('respondent')
       .insert([
         {
           respondent_code: respondentCode,

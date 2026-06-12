@@ -1,16 +1,62 @@
 import { NextRequest, NextResponse } from 'next/server'
-import prisma from "@/lib/prisma"
+import { getSupabaseClient } from '@/lib/supabase'
 
 export async function GET(_: NextRequest) {
   try {
-    const sessions = await prisma.session.findMany({
-      include: {
-        respondent: true,
-        itemResponses: true,
-        gad7Response: true,
-        result: true,
-      },
-      orderBy: { createdAt: 'asc' },
+    const supabase = getSupabaseClient()
+
+    // Fetch all sessions with related data
+    const { data: sessions, error: sessionsError } = await supabase
+      .from('session')
+      .select(`
+        id,
+        respondent_id,
+        practitioner_name,
+        created_at,
+        completed_at,
+        status,
+        respondent:respondent_id(
+          respondent_code,
+          name,
+          age,
+          gender,
+          education,
+          phone,
+          city,
+          state,
+          country
+        )
+      `)
+      .order('created_at', { ascending: true })
+
+    if (sessionsError) throw sessionsError
+
+    // Fetch all item responses
+    const { data: allItemResponses, error: itemsError } = await supabase
+      .from('item_response')
+      .select('session_id, item_number, item_total')
+
+    if (itemsError) throw itemsError
+
+    // Fetch all session results
+    const { data: allResults, error: resultsError } = await supabase
+      .from('session_result')
+      .select('session_id, predominant_prakriti, secondary_prakriti, primary_category, gad7_total, gad7_severity, gad7_impairment')
+
+    if (resultsError) throw resultsError
+
+    // Create lookup maps
+    const itemResponsesBySession = new Map()
+    allItemResponses?.forEach(ir => {
+      if (!itemResponsesBySession.has(ir.session_id)) {
+        itemResponsesBySession.set(ir.session_id, [])
+      }
+      itemResponsesBySession.get(ir.session_id).push(ir)
+    })
+
+    const resultsBySession = new Map()
+    allResults?.forEach(r => {
+      resultsBySession.set(r.session_id, r)
     })
 
     // Build CSV header
@@ -45,32 +91,36 @@ export async function GET(_: NextRequest) {
     const rows: string[] = []
     rows.push(headers.map((h) => `"${h}"`).join(','))
 
-    sessions.forEach((session) => {
+    sessions?.forEach((session: any) => {
       const itemScores: number[] = new Array(118).fill(0)
-      session.itemResponses.forEach((ir) => {
-        itemScores[ir.itemNumber - 1] = ir.itemTotal || 0
+      const itemResponses = itemResponsesBySession.get(session.id) || []
+      itemResponses.forEach((ir: any) => {
+        itemScores[ir.item_number - 1] = ir.item_total || 0
       })
+
+      const result = resultsBySession.get(session.id)
+      const respondent = Array.isArray(session.respondent) ? session.respondent[0] : session.respondent
 
       const row = [
         session.id,
-        session.respondent.respondentCode,
-        session.respondent.name || '',
-        session.respondent.age || '',
-        session.respondent.gender || '',
-        session.respondent.education || '',
-        session.respondent.phone || '',
-        session.respondent.city || '',
-        session.respondent.state || '',
-        session.respondent.country || '',
-        session.practitionerName,
-        new Date(session.completedAt || session.createdAt).toISOString(),
+        respondent?.respondent_code || '',
+        respondent?.name || '',
+        respondent?.age || '',
+        respondent?.gender || '',
+        respondent?.education || '',
+        respondent?.phone || '',
+        respondent?.city || '',
+        respondent?.state || '',
+        respondent?.country || '',
+        session.practitioner_name,
+        new Date(session.completed_at || session.created_at).toISOString(),
         session.status,
-        session.result?.predominantPrakriti || '',
-        session.result?.secondaryPrakriti || '',
-        session.result?.primaryCategory || '',
-        session.result?.gad7Total || '',
-        session.result?.gad7Severity || '',
-        session.result?.gad7Impairment || '',
+        result?.predominant_prakriti || '',
+        result?.secondary_prakriti || '',
+        result?.primary_category || '',
+        result?.gad7_total || '',
+        result?.gad7_severity || '',
+        result?.gad7_impairment || '',
         ...itemScores.map((s) => s.toString()),
       ]
 

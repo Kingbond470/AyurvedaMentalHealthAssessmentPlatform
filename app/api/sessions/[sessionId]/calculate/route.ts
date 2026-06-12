@@ -15,16 +15,16 @@ export async function POST(
     // Get session with responses
     const [{ data: session }, { data: itemResponses }, { data: gad7Response }] = await Promise.all([
       supabase
-        .from('Session')
+        .from('session')
         .select('*')
         .eq('id', params.sessionId)
         .single(),
       supabase
-        .from('ItemResponse')
+        .from('item_response')
         .select('*')
         .eq('session_id', params.sessionId),
       supabase
-        .from('GAD7Response')
+        .from('gad7_response')
         .select('*')
         .eq('session_id', params.sessionId)
         .single(),
@@ -79,7 +79,7 @@ export async function POST(
 
     // Create or update session result
     const { data: result, error: resultError } = await supabase
-      .from('SessionResult')
+      .from('session_result')
       .upsert(
         {
           session_id: params.sessionId,

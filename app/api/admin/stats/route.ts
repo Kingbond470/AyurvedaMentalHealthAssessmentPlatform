@@ -1,36 +1,51 @@
 import { NextRequest, NextResponse } from 'next/server'
-import prisma from "@/lib/prisma"
+import { getSupabaseClient } from '@/lib/supabase'
 
 export async function GET(_: NextRequest) {
   try {
+    const supabase = getSupabaseClient()
 
-    const totalSessions = await prisma.session.count()
-    const completedSessions = await prisma.session.count({
-      where: { status: 'COMPLETED' },
-    })
-    const inProgressSessions = await prisma.session.count({
-      where: { status: 'IN_PROGRESS' },
-    })
+    // Get all sessions for counting
+    const { data: allSessions, error: sessionsError } = await supabase
+      .from('session')
+      .select('id, status')
+
+    if (sessionsError) throw sessionsError
+
+    const sessions = allSessions || []
+    const totalSessions = sessions.length
+    const completedSessions = sessions.filter(s => s.status === 'COMPLETED').length
+    const inProgressSessions = sessions.filter(s => s.status === 'IN_PROGRESS').length
 
     // Prakriti breakdown
-    const results = await prisma.sessionResult.findMany()
+    const { data: results, error: resultsError } = await supabase
+      .from('session_result')
+      .select('predominant_prakriti')
+
+    if (resultsError) throw resultsError
+
     const prakritiBreaddown: Record<string, number> = {}
-    results.forEach((result) => {
-      if (!prakritiBreaddown[result.predominantPrakriti]) {
-        prakritiBreaddown[result.predominantPrakriti] = 0
+    results?.forEach((result) => {
+      if (!prakritiBreaddown[result.predominant_prakriti]) {
+        prakritiBreaddown[result.predominant_prakriti] = 0
       }
-      prakritiBreaddown[result.predominantPrakriti]++
+      prakritiBreaddown[result.predominant_prakriti]++
     })
 
     // GAD-7 distribution
-    const gad7Responses = await prisma.gAD7Response.findMany()
+    const { data: gad7Responses, error: gad7Error } = await supabase
+      .from('gad7_response')
+      .select('severity')
+
+    if (gad7Error) throw gad7Error
+
     const gad7Distribution: Record<string, number> = {
       MINIMAL: 0,
       MILD: 0,
       MODERATE: 0,
       SEVERE: 0,
     }
-    gad7Responses.forEach((response) => {
+    gad7Responses?.forEach((response) => {
       gad7Distribution[response.severity]++
     })
 

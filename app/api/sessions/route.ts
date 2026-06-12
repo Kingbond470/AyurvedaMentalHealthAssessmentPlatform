@@ -17,9 +17,9 @@ export async function POST(request: NextRequest) {
 
     // Find respondent
     const { data: respondent, error: respondentError } = await supabase
-      .from('Respondent')
+      .from('respondent')
       .select('id')
-      .eq('respondentCode', respondentCode)
+      .eq('respondent_code', respondentCode)
       .single()
 
     if (respondentError || !respondent) {
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
 
     // Create session
     const { data: session, error: sessionError } = await supabase
-      .from('Session')
+      .from('session')
       .insert([
         {
           respondent_id: respondent.id,
@@ -60,7 +60,7 @@ export async function GET(_: NextRequest) {
   try {
     const supabase = getSupabaseClient()
     const { data, error } = await supabase
-      .from('Session')
+      .from('session')
       .select('*')
       .order('created_at', { ascending: false })
 
