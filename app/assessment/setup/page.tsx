@@ -95,19 +95,27 @@ export default function AssessmentSetupPage() {
         </div>
       </header>
 
-      <main className="container-content px-4 py-12">
-        <div className="bg-bg-surface rounded-lg shadow-md p-8 max-w-md mx-auto">
-          {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm font-ui">
-              {error}
-            </div>
-          )}
+      <main className="container-content px-4 py-8 flex items-center justify-center min-h-[calc(100vh-120px)]">
+        <div className="bg-bg-surface rounded-lg shadow-md w-full max-w-md sm:max-w-lg md:max-w-2xl flex flex-col max-h-[calc(100vh-160px)]">
+          {/* Header */}
+          <div className="px-6 sm:px-8 py-6 border-b border-border-light shrink-0">
+            <h2 className="text-xl font-display text-text-primary mb-1">
+              Assessment Setup
+            </h2>
+            <p className="text-xs text-text-secondary font-ui">
+              Respondent information & language selection
+            </p>
+          </div>
 
-          <div className="space-y-4">
-              <h2 className="text-xl font-display text-text-primary mb-6">
-                Assessment Setup
-              </h2>
+          {/* Scrollable Form */}
+          <div className="overflow-y-auto flex-1 px-6 sm:px-8 py-6 space-y-4 relative">
+            {error && (
+              <div className="mb-4 p-3 bg-red-600/20 border border-red-600/40 rounded text-red-500 text-sm font-ui sticky top-0 z-10">
+                {error}
+              </div>
+            )}
 
+            <div className="space-y-4">
               <div>
                 <label className="block text-sm font-ui text-text-primary mb-1">
                   Practitioner Name *
@@ -272,14 +280,19 @@ export default function AssessmentSetupPage() {
                 </div>
               </div>
 
-              <button
-                onClick={handleSubmit}
-                disabled={loading}
-                className="w-full bg-primary-500 text-white font-ui font-600 py-2 rounded-lg hover:bg-primary-600 transition disabled:opacity-50 mt-6"
-              >
-                {loading ? 'Starting...' : 'Begin Assessment'}
-              </button>
             </div>
+          </div>
+
+          {/* Sticky Footer with Button */}
+          <div className="border-t border-border-light px-6 sm:px-8 py-4 shrink-0 bg-bg-section">
+            <button
+              onClick={handleSubmit}
+              disabled={loading}
+              className="w-full bg-primary-500 text-white font-ui font-600 py-3 rounded-lg hover:bg-primary-600 transition disabled:opacity-50"
+            >
+              {loading ? 'Starting...' : 'Begin Assessment'}
+            </button>
+          </div>
         </div>
       </main>
     </div>
