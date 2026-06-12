@@ -64,7 +64,7 @@ export default function AdminLoginPage() {
               onChange={(e) => setUsername(e.target.value)}
               placeholder="Enter username"
               disabled={loading}
-              className="w-full px-4 py-3 border border-border-light rounded-lg font-body focus:outline-none focus:border-primary-500 disabled:opacity-50"
+              className="w-full px-4 py-3 border border-border-light rounded-lg font-body focus:outline-none focus:border-primary-500 disabled:opacity-50 bg-[var(--bg-secondary)] text-[var(--text-primary)]"
               required
             />
           </div>
@@ -79,7 +79,7 @@ export default function AdminLoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter password"
               disabled={loading}
-              className="w-full px-4 py-3 border border-border-light rounded-lg font-body focus:outline-none focus:border-primary-500 disabled:opacity-50"
+              className="w-full px-4 py-3 border border-border-light rounded-lg font-body focus:outline-none focus:border-primary-500 disabled:opacity-50 bg-[var(--bg-secondary)] text-[var(--text-primary)]"
               required
             />
           </div>
