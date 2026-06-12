@@ -82,14 +82,17 @@ export default function MPPIItemsTab() {
 
   if (items.length === 0) {
     return (
-      <div className="text-center py-12">
-        <p className="text-text-secondary font-ui mb-4">No MPPI items found in database</p>
+      <div className="text-center py-12 px-6">
+        <p className="text-text-secondary font-ui mb-2">No MPPI items loaded</p>
         <p className="text-xs text-text-tertiary mb-6">
-          Items need to be imported or populated from CSV
+          Run seed script to populate 118 MPPI items:
         </p>
-        <button className="px-6 py-2 bg-primary-500 text-white rounded-lg font-ui font-600 hover:bg-primary-600 transition">
-          Import Items from CSV (Coming Soon)
-        </button>
+        <code className="block bg-bg-section p-3 rounded text-xs mb-4 overflow-auto">
+          npm run seed:items
+        </code>
+        <p className="text-xs text-text-tertiary">
+          Seeds all items with English content. Add translations (HI/MR) in item editor.
+        </p>
       </div>
     )
   }
