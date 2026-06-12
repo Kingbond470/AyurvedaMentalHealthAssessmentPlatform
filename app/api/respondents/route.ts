@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
       .from('Respondent')
       .insert([
         {
-          respondentCode,
+          respondent_code: respondentCode,
           age: validated.age,
           gender: validated.gender,
           education: validated.education,
