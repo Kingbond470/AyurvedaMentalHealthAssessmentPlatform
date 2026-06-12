@@ -3,11 +3,13 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSessionStore } from '@/lib/store'
+import { getLabel } from '@/lib/localization'
 import axios from 'axios'
 
 export default function AssessmentSetupPage() {
   const router = useRouter()
-  const { setSessionId, setRespondentCode, setLanguage } = useSessionStore()
+  const { setSessionId, setRespondentCode, setLanguage: setStoreLanguage } = useSessionStore()
+  const uiLanguage = useSessionStore((state) => state.language)
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -69,7 +71,7 @@ export default function AssessmentSetupPage() {
       // Update store
       setSessionId(session.id)
       setRespondentCode(respondent.respondentCode)
-      setLanguage(language as 'EN' | 'HI' | 'MR')
+      setStoreLanguage(language as 'EN' | 'HI' | 'MR')
 
       // Redirect to assessment (always starts MPPI)
       router.push(`/assessment/${session.id}`)
@@ -87,10 +89,10 @@ export default function AssessmentSetupPage() {
       <header className="bg-bg-surface border-b border-border-light">
         <div className="container-content px-4 py-4">
           <h1 className="text-2xl font-display text-text-primary">
-            New Assessment
+            {getLabel('newAssessment', uiLanguage)}
           </h1>
           <p className="text-sm text-text-secondary font-ui">
-            Setup & Begin
+            {getLabel('setupDescription', uiLanguage)}
           </p>
         </div>
       </header>
@@ -100,10 +102,10 @@ export default function AssessmentSetupPage() {
           {/* Header */}
           <div className="px-6 sm:px-8 py-6 border-b border-border-light shrink-0">
             <h2 className="text-xl font-display text-text-primary mb-1">
-              Assessment Setup
+              {getLabel('assessmentSetup', uiLanguage)}
             </h2>
             <p className="text-xs text-text-secondary font-ui">
-              Respondent information & language selection
+              {getLabel('setupDescription', uiLanguage)}
             </p>
           </div>
 
@@ -118,27 +120,27 @@ export default function AssessmentSetupPage() {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-ui text-text-primary mb-1">
-                  Practitioner Name *
+                  {getLabel('practitionerName', uiLanguage)} *
                 </label>
                 <input
                   type="text"
                   value={practitionerName}
                   onChange={(e) => setPractitionerName(e.target.value)}
                   className="w-full px-4 py-2 border border-border-light rounded-lg font-body bg-[var(--bg-secondary)] text-[var(--text-primary)]"
-                  placeholder="Your name"
+                  placeholder={getLabel('practitionerNamePlaceholder', uiLanguage)}
                   required
                 />
               </div>
 
               <div className="border-t border-border-light pt-4 mt-4">
                 <h3 className="text-sm font-ui font-600 text-text-primary mb-4">
-                  Respondent Information
+                  {getLabel('respondentInformation', uiLanguage)}
                 </h3>
               </div>
 
               <div>
                 <label className="block text-sm font-ui text-text-primary mb-1">
-                  Name
+                  {getLabel('name', uiLanguage)}
                 </label>
                 <input
                   type="text"
@@ -150,7 +152,7 @@ export default function AssessmentSetupPage() {
 
               <div>
                 <label className="block text-sm font-ui text-text-primary mb-1">
-                  Age *
+                  {getLabel('age', uiLanguage)} *
                 </label>
                 <input
                   type="number"
@@ -163,7 +165,7 @@ export default function AssessmentSetupPage() {
 
               <div>
                 <label className="block text-sm font-ui text-text-primary mb-1">
-                  Gender *
+                  {getLabel('gender', uiLanguage)} *
                 </label>
                 <div className="flex gap-3">
                   {['MALE', 'FEMALE', 'OTHER'].map((g) => (
@@ -183,7 +185,7 @@ export default function AssessmentSetupPage() {
 
               <div>
                 <label className="block text-sm font-ui text-text-primary mb-1">
-                  Education
+                  {getLabel('education', uiLanguage)}
                 </label>
                 <select
                   value={education}
@@ -202,7 +204,7 @@ export default function AssessmentSetupPage() {
 
               <div>
                 <label className="block text-sm font-ui text-text-primary mb-1">
-                  Occupation
+                  {getLabel('occupation', uiLanguage)}
                 </label>
                 <input
                   type="text"
@@ -214,7 +216,7 @@ export default function AssessmentSetupPage() {
 
               <div>
                 <label className="block text-sm font-ui text-text-primary mb-1">
-                  Phone
+                  {getLabel('phone', uiLanguage)}
                 </label>
                 <input
                   type="tel"
@@ -226,7 +228,7 @@ export default function AssessmentSetupPage() {
 
               <div>
                 <label className="block text-sm font-ui text-text-primary mb-1">
-                  City
+                  {getLabel('city', uiLanguage)}
                 </label>
                 <input
                   type="text"
@@ -238,7 +240,7 @@ export default function AssessmentSetupPage() {
 
               <div>
                 <label className="block text-sm font-ui text-text-primary mb-1">
-                  State
+                  {getLabel('state', uiLanguage)}
                 </label>
                 <input
                   type="text"
@@ -250,7 +252,7 @@ export default function AssessmentSetupPage() {
 
               <div>
                 <label className="block text-sm font-ui text-text-primary mb-1">
-                  Country
+                  {getLabel('country', uiLanguage)}
                 </label>
                 <input
                   type="text"
@@ -262,7 +264,7 @@ export default function AssessmentSetupPage() {
 
               <div>
                 <label className="block text-sm font-ui text-text-primary mb-1">
-                  Language
+                  {getLabel('language', uiLanguage)}
                 </label>
                 <div className="flex gap-3">
                   {['EN', 'HI', 'MR'].map((lang) => (
@@ -274,7 +276,7 @@ export default function AssessmentSetupPage() {
                         checked={language === lang}
                         onChange={(e) => setLangSelection(e.target.value)}
                       />
-                      {lang === 'EN' ? 'English' : lang === 'HI' ? 'Hindi' : 'Marathi'}
+                      {lang === 'EN' ? getLabel('english', uiLanguage) : lang === 'HI' ? getLabel('hindi', uiLanguage) : getLabel('marathi', uiLanguage)}
                     </label>
                   ))}
                 </div>
@@ -290,7 +292,7 @@ export default function AssessmentSetupPage() {
               disabled={loading}
               className="w-full bg-primary-500 text-white font-ui font-600 py-3 rounded-lg hover:bg-primary-600 transition disabled:opacity-50"
             >
-              {loading ? 'Starting...' : 'Begin Assessment'}
+              {loading ? getLabel('starting', uiLanguage) : getLabel('beginAssessment', uiLanguage)}
             </button>
           </div>
         </div>

@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import axios from 'axios'
+import { getLabel } from '@/lib/localization'
+import { useSessionStore } from '@/lib/store'
 
 export default function AdminLoginPage() {
   const router = useRouter()
@@ -10,6 +12,8 @@ export default function AdminLoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const language = useSessionStore((state) => state.language)
+  const setLanguage = useSessionStore((state) => state.setLanguage)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -35,13 +39,26 @@ export default function AdminLoginPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-500/10 to-accent-500/10 flex items-center justify-center p-4">
       <div className="bg-bg-surface rounded-lg shadow-lg p-8 w-full max-w-md">
+        {/* Language Toggle */}
+        <div className="mb-6 flex justify-end">
+          <select
+            value={language}
+            onChange={(e) => setLanguage(e.target.value as any)}
+            className="px-3 py-1 bg-bg-section border border-border-light rounded font-ui text-sm text-text-primary hover:bg-border-light transition"
+          >
+            <option value="EN">{getLabel('english', language)}</option>
+            <option value="HI">{getLabel('hindi', language)}</option>
+            <option value="MR">{getLabel('marathi', language)}</option>
+          </select>
+        </div>
+
         {/* Header */}
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-display text-text-primary mb-2">
-            Admin Access
+            {getLabel('adminLogin', language)}
           </h1>
           <p className="text-sm text-text-secondary font-body">
-            Manas Prakriti & Anxiety Assessment Platform
+            {getLabel('mpaapAssessment', language)}
           </p>
         </div>
 
@@ -56,13 +73,13 @@ export default function AdminLoginPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-ui font-600 text-text-primary mb-2">
-              Username
+              {getLabel('username', language)}
             </label>
             <input
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="Enter username"
+              placeholder={getLabel('enterUsername', language)}
               disabled={loading}
               className="w-full px-4 py-3 border border-border-light rounded-lg font-body focus:outline-none focus:border-primary-500 disabled:opacity-50 bg-[var(--bg-secondary)] text-[var(--text-primary)]"
               required
@@ -71,13 +88,13 @@ export default function AdminLoginPage() {
 
           <div>
             <label className="block text-sm font-ui font-600 text-text-primary mb-2">
-              Password
+              {getLabel('password', language)}
             </label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter password"
+              placeholder={getLabel('enterPassword', language)}
               disabled={loading}
               className="w-full px-4 py-3 border border-border-light rounded-lg font-body focus:outline-none focus:border-primary-500 disabled:opacity-50 bg-[var(--bg-secondary)] text-[var(--text-primary)]"
               required
@@ -89,7 +106,7 @@ export default function AdminLoginPage() {
             disabled={loading}
             className="w-full px-4 py-3 bg-primary-500 text-white rounded-lg font-ui font-600 hover:bg-primary-600 disabled:opacity-50 transition mt-6"
           >
-            {loading ? 'Logging in...' : 'Login'}
+            {loading ? getLabel('loading', language) : getLabel('login', language)}
           </button>
         </form>
 
