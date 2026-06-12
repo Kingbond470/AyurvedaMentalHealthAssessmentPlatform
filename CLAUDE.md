@@ -262,6 +262,66 @@ return NextResponse.json(data)
 - **DB:** Audit trail, recovery if browser closes, multi-device consistency
 - **Pattern:** Every item save → Zustand + API POST simultaneously
 
+## Multi-Language UI Support (V1.1)
+
+### Implementation: Hard-Coded Constants (Approach A)
+
+**Why this approach:**
+- No database lookups → faster UI
+- No external dependencies (no i18n library bloat)
+- Tight control over terminology (healthcare terminology must be precise)
+- Easy to maintain + audit all translations in one file
+- Works offline (translations bundled with app)
+
+**File Structure:**
+```
+lib/localization.ts
+├─ type Language = 'EN' | 'HI' | 'MR'
+├─ export const UI_LABELS = {
+│   EN: { next: 'Next', previous: 'Previous', ... },
+│   HI: { next: 'आगे', previous: 'पिछला', ... },
+│   MR: { next: 'पुढे', previous: 'मागे', ... }
+├─ getLabel(key, language) → returns translated string
+└─ getLocalizedName(value, language, type) → severity/category labels
+```
+
+**Usage Pattern:**
+```typescript
+import { getLabel } from '@/lib/localization'
+import { useSessionStore } from '@/lib/store'
+
+const language = useSessionStore(state => state.language)
+const text = getLabel('logout', language) // 'Logout' | 'लॉगआउट' | 'लॉगआउट'
+```
+
+**Supported Languages:**
+- **EN:** English (complete)
+- **HI:** Hindi (complete)
+- **MR:** Marathi (complete)
+
+**Covered Pages (V1.1):**
+- Admin login (`/admin/login`) - with language toggle
+- Admin dashboard tabs (`/admin/manage`) - with language switcher
+- Sessions list + filters
+- Reports + charts + data export
+- Assessment setup (`/assessment/setup`) - field labels + language selection
+
+**Integrated Components:**
+- `SessionsTab` - filters, table headers, actions
+- `ReportsTab` - stat cards, chart titles, export buttons
+- Admin header - logout button, settings
+
+**Persistence:**
+- Language stored in `useSessionStore` (Zustand)
+- Persists to localStorage (`session-store`)
+- Survives page reload + multi-tab consistency
+
+**Future Language Addition:**
+1. Add key-value pairs to all three language objects in `UI_LABELS`
+2. No database changes needed
+3. No code changes (new keys auto-fallback to EN if missing)
+4. Deploy immediately (no migrations)
+
 ## Google Sheets Integration
 
 ### Architecture
@@ -426,11 +486,13 @@ See `THEME_SYSTEM.md` for:
 
 ## Implementation Status
 
-### Production Ready (V1.1 - Supabase-Native)
+### Production Ready (V1.2 - Complete Platform)
 - ✅ Core assessment + scoring (118 MPPI + 7 GAD-7 items)
 - ✅ PDF reports (@react-pdf/renderer)
-- ✅ Google Sheets export (append-only, service account auth)
+- ✅ CSV export (all sessions + responses with 118 item scores)
 - ✅ Admin item management (4-tab dashboard with language tabs)
+- ✅ Admin sessions dashboard (filter by status/severity/date, view/PDF actions)
+- ✅ Admin reports (stat cards, prakriti/GAD-7 charts, data export buttons)
 - ✅ Supabase-native architecture (REST API all endpoints)
 - ✅ Prisma removed - pure Supabase migrations
 - ✅ Complete REST API migration:
@@ -442,14 +504,18 @@ See `THEME_SYSTEM.md` for:
 - ✅ Static admin authentication (env var credentials + session cookies)
 - ✅ Premium theme system (4 color variants, persistent)
 - ✅ Assessment setup with scrollable form (sticky header/footer)
-- ✅ Multilingual modals (EN/HI/MR for questions)
+- ✅ Multilingual question content (EN/HI/MR in Supabase)
+- ✅ **Multi-language UI labels (EN/HI/MR)** - hard-coded constants approach
+  - Admin login page language toggle
+  - Assessment setup page language selection
+  - All filter labels, headers, buttons, actions localized
+  - Language persisted in Zustand store (localStorage)
 - ✅ Full end-to-end flow verified (respondent → session → items → GAD-7 → results)
 - ✅ Vercel deployment (production URL working)
 
-### In Progress / TODO (V1.2+)
-- 🚧 Respondent registration UI (demographics collection flow - form built, flow needs wiring)
-- 🚧 Results display page (fetch SessionResult, show Prakriti + GAD-7)
-- ⬜ Multi-language UI labels (currently: EN only, questions: EN/HI/MR)
+### In Progress / TODO (V1.3+)
+- 🚧 Results display page localization (fetch SessionResult, show Prakriti + GAD-7 in user language)
+- 🚧 Assessment interface pages localization (MPPI/GAD-7 pages use getLabel for static labels)
 - ⬜ Bulk item import (CSV/Excel)
 - ⬜ Recommendations engine (prakriti-based lifestyle advice)
 - ⬜ Statistical analysis module (ANOVA, correlation testing)
