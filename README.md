@@ -97,72 +97,90 @@ Set environment variables in Vercel dashboard (Project Settings → Environment 
 ```
 .
 ├── app/
-│   ├── api/                      # API routes
-│   │   ├── auth/login            # JWT login
+│   ├── api/                      # REST API routes
+│   │   ├── respondents/          # Respondent creation
 │   │   ├── sessions/             # Session CRUD + item responses
 │   │   ├── admin/                # Admin stats & items management
 │   │   └── [...]
 │   ├── assessment/               # Assessment interface (MPPI + GAD-7)
 │   ├── dashboard/                # Practitioner dashboard
-│   ├── login/                    # Login page
+│   ├── admin/                    # Admin dashboard & item management
 │   ├── results/[sessionId]/      # Results display + PDF report
-│   └── admin/                    # Admin dashboard & item management
+│   └── admin/login/              # Static auth login
 ├── components/
 │   ├── AssessmentInterface.tsx   # MPPI item interface
 │   ├── GAD7Interface.tsx         # GAD-7 interface
 │   └── [...]
 ├── lib/
 │   ├── scoring.ts                # Scoring engine (16 subtypes)
-│   ├── auth.ts                   # JWT + password utilities
-│   ├── store.ts                  # Zustand stores (auth + session)
+│   ├── supabase.ts               # Supabase REST client
+│   ├── store.ts                  # Zustand stores (auth + session + theme)
 │   ├── googleSheets.ts           # Google Sheets integration
 │   ├── schemas.ts                # Zod validation schemas
 │   └── [...]
-├── prisma/
-│   └── schema.prisma             # Database schema
+├── types/
+│   └── database.ts               # TypeScript types from Supabase schema
+├── supabase/
+│   ├── config.json               # Supabase project configuration
+│   └── migrations/               # SQL migrations (enums, tables, schema)
 ├── scripts/
-│   └── seed.js                   # Populate demo data
+│   ├── push-migrations.js        # Apply Supabase migrations
+│   ├── test-flow.js              # End-to-end assessment flow test
+│   └── apply-single.js           # Apply individual migrations
 └── public/
 ```
 
-## Data Architecture
+## Data Architecture (Supabase-Native)
 
-### Key Models
+### Database Schema
 
-**User:** Practitioner or Admin account
-- Email, password hash, role
-- Sessions they've conducted
+All tables use **snake_case** column naming. Schema managed via SQL migrations in `supabase/migrations/`.
 
-**Respondent:** Person being assessed
-- Demographics (age, gender, education, location, phone)
-- Respondent code (auto-generated or manual)
-- Language preference (EN/HI/MR)
+**respondent:** Person being assessed
+- `respondent_code` (auto-generated unique identifier)
+- `age`, `gender` (ENUM), `education`, `occupation`, `name`, `phone`, `city`, `state`, `country`
+- `language` (ENUM: EN/HI/MR)
+- Created via `POST /api/respondents`
 
-**Session:** Single assessment instance
-- Links respondent + practitioner
-- Fixed sequence: MPPI (items 1-118) → GAD-7 (items 1-7) → Results
-- Tracks current section + item for progress
-- Auto-saves progress to localStorage + server
-- Status: IN_PROGRESS | COMPLETED | ABANDONED
+**session:** Single assessment instance
+- `respondent_id` (FK)
+- `practitioner_name` (string, no user account required)
+- `status` (ENUM: IN_PROGRESS | COMPLETED | ABANDONED)
+- `phase` (ENUM: MPPI | GAD7 | RESULTS)
+- `current_section`, `current_item` (progress tracking)
+- `started_at`, `completed_at`, `last_activity_at`
 
-**ItemResponse:** Individual probe score (0-4)
-- 3 probes per item → max 12 per item
-- 118 items total (MPPI Sections 1-16)
+**item_response:** Individual probe score for MPPI
+- `session_id` (FK)
+- `item_number` (1-118)
+- `probe1_score`, `probe2_score`, `probe3_score` (0-4 each)
+- `item_total` (computed: sum of 3 probes)
+- Unique constraint on (session_id, item_number)
 
-**GAD7Response:** Anxiety assessment
-- 7 items (0-3 each) + 1 impairment question
-- Auto-calculated total (0-21) + severity label
+**gad7_response:** Anxiety assessment responses
+- `session_id` (FK, unique)
+- `item1_score` through `item7_score` (0-3 each)
+- `impairment_score` (0-3, optional on first save)
+- `total_score`, `severity` (ENUM: MINIMAL | MILD | MODERATE | SEVERE)
 
-**SessionResult:** Computed scores (auto-generated on completion)
-- Raw + max + percentage for all 16 subtypes
-- Predominant + secondary Prakriti
-- GAD-7 total + severity
+**session_result:** Computed scores (auto-generated on completion)
+- `session_id` (FK, unique)
+- `subtype_percentages` (JSONB: {BRAMHA: 66.7, ARSHA: 100, ...})
+- `predominant_prakriti`, `secondary_prakriti` (subtype codes)
+- `primary_category` (SATTVIKA | RAJASIKA | TAMASIKA)
+- `gad7_total`, `gad7_severity`, `gad7_impairment`
 
-**Item:** Question bank entry
-- MPPI: 118 items (section, Sanskrit name, 3 follow-up probes, subtype mappings)
-- GAD-7: 7 items
-- Translations (EN/HI/MR)
-- Admin-editable
+**item:** Question bank entry
+- MPPI: 118 items (one per row)
+  - `item_number`, `section`, `predictor_sanskrit`, `predictor_devanagari`, `interpretation`
+  - `core_probe_en/hi/mr`, `probe1_question_en/hi/mr`, `probe1_score0_en/hi/mr`, ... (all optional, fallback to EN)
+  - `mapped_subtypes` (text array: ["BRAMHA", "YAAMYA"])
+- Translations nullable (fallback mechanism)
+
+**gad7_item:** GAD-7 question bank
+- `item_number` (1-7)
+- `question_en/hi/mr`, `option0_en/hi/mr` through `option3_en/hi/mr`
+- `is_impairment_item` (boolean)
 
 ### Scoring Engine
 
@@ -357,15 +375,36 @@ Platform is configured for **Vercel serverless deployment**:
 
 ## Troubleshooting
 
-### Database Connection Issues
+### Supabase Connection Issues
 ```bash
-# Check DB running
-psql -U user -d manas_prakriti -c "SELECT 1"
+# Test REST API health endpoint
+curl https://your-project.supabase.co/rest/v1/health
 
-# Reset migrations
-npm run prisma:migrate reset
-npm run seed
+# Check credentials in .env.local
+NEXT_PUBLIC_SUPABASE_URL=...
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=...
+
+# Verify tables exist in Supabase SQL editor
+SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'
 ```
+
+### Database Schema Issues
+```bash
+# Check migration status
+ls supabase/migrations/
+
+# Re-apply migrations to fresh Supabase project
+PGPASSWORD=your-password psql -h db.xxx.supabase.co -U postgres -d postgres -f migration-file.sql
+
+# Or use Node script
+DATABASE_URL=postgresql://... node scripts/push-migrations.js
+```
+
+### API Route 404 Errors
+- Clear Next.js cache: `rm -rf .next`
+- Restart dev server: `npm run dev`
+- Verify table names are lowercase in Supabase (respondent not Respondent)
+- Check env vars are loaded: `echo $NEXT_PUBLIC_SUPABASE_URL`
 
 ### Google Sheets Errors
 - Verify credentials JSON format
@@ -374,9 +413,9 @@ npm run seed
 - Check quota limits
 
 ### Performance
-- For 1000+ sessions, consider indexing on respondentCode + createdAt
-- Implement pagination on admin sessions list
-- Cache subtype config in memory
+- For 10k+ sessions, add indexes on `session(respondent_id, created_at)` and `session(practitioner_id, status)`
+- Consider pagination on admin sessions list (currently no limit)
+- Implement caching for subtype config
 
 ## Roadmap (V2+)
 
@@ -407,5 +446,6 @@ Issues? Questions? Reach out to the engineering team.
 
 ---
 
-**Built with Next.js + Prisma + Tailwind CSS**
+**Built with Next.js + Supabase + Tailwind CSS**
+**Supabase-native v1.1 (Prisma removed)**
 **Clinical-grade assessment platform for Ayurvedic-psychiatric research**
