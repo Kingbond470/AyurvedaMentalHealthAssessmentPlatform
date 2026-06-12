@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import axios from 'axios'
 import Link from 'next/link'
+import { getLabel, Language } from '@/lib/localization'
 
 interface SessionData {
   id: string
@@ -30,6 +31,7 @@ export default function SessionsTab() {
   const [filterStatus, setFilterStatus] = useState<string>('COMPLETED')
   const [dateFrom, setDateFrom] = useState<string>('')
   const [dateTo, setDateTo] = useState<string>('')
+  const [language, setLanguage] = useState<Language>('EN')
 
   useEffect(() => {
     fetchSessions()
@@ -83,51 +85,51 @@ export default function SessionsTab() {
   }
 
   if (loading) {
-    return <div className="text-center py-8">Loading sessions...</div>
+    return <div className="text-center py-8">{getLabel('loading', language)}</div>
   }
 
   return (
     <div className="space-y-6">
       {/* Filters */}
       <div className="bg-bg-surface rounded-lg shadow-sm p-6">
-        <h3 className="text-lg font-display text-text-primary mb-4">Filters</h3>
+        <h3 className="text-lg font-display text-text-primary mb-4">{getLabel('filters', language)}</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
             <label className="block text-sm font-ui text-text-secondary mb-2">
-              Status
+              {getLabel('status', language)}
             </label>
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
               className="w-full px-3 py-2 border border-border-light rounded-lg font-ui bg-[var(--bg-secondary)] text-[var(--text-primary)]"
             >
-              <option value="all">All</option>
-              <option value="COMPLETED">Completed</option>
-              <option value="IN_PROGRESS">In Progress</option>
-              <option value="ABANDONED">Abandoned</option>
+              <option value="all">{getLabel('all', language)}</option>
+              <option value="COMPLETED">{getLabel('completed', language)}</option>
+              <option value="IN_PROGRESS">{getLabel('inProgress', language)}</option>
+              <option value="ABANDONED">{getLabel('abandoned', language)}</option>
             </select>
           </div>
 
           <div>
             <label className="block text-sm font-ui text-text-secondary mb-2">
-              GAD-7 Severity
+              {getLabel('gad7Severity', language)}
             </label>
             <select
               value={filterSeverity}
               onChange={(e) => setFilterSeverity(e.target.value)}
               className="w-full px-3 py-2 border border-border-light rounded-lg font-ui bg-[var(--bg-secondary)] text-[var(--text-primary)]"
             >
-              <option value="all">All</option>
-              <option value="MINIMAL">Minimal</option>
-              <option value="MILD">Mild</option>
-              <option value="MODERATE">Moderate</option>
-              <option value="SEVERE">Severe</option>
+              <option value="all">{getLabel('all', language)}</option>
+              <option value="MINIMAL">{getLabel('minimal', language)}</option>
+              <option value="MILD">{getLabel('mild', language)}</option>
+              <option value="MODERATE">{getLabel('moderate', language)}</option>
+              <option value="SEVERE">{getLabel('severe', language)}</option>
             </select>
           </div>
 
           <div>
             <label className="block text-sm font-ui text-text-secondary mb-2">
-              From Date
+              {getLabel('fromDate', language)}
             </label>
             <input
               type="date"
@@ -139,7 +141,7 @@ export default function SessionsTab() {
 
           <div>
             <label className="block text-sm font-ui text-text-secondary mb-2">
-              To Date
+              {getLabel('toDate', language)}
             </label>
             <input
               type="date"
@@ -158,28 +160,28 @@ export default function SessionsTab() {
             <thead className="bg-bg-section border-b border-border-light">
               <tr>
                 <th className="px-6 py-3 text-left font-ui font-600 text-text-primary">
-                  Respondent
+                  {getLabel('respondent', language)}
                 </th>
                 <th className="px-6 py-3 text-left font-ui font-600 text-text-primary">
-                  Code
+                  {getLabel('code', language)}
                 </th>
                 <th className="px-6 py-3 text-left font-ui font-600 text-text-primary">
-                  Age
+                  {getLabel('age', language)}
                 </th>
                 <th className="px-6 py-3 text-left font-ui font-600 text-text-primary">
-                  Date
+                  {getLabel('date', language)}
                 </th>
                 <th className="px-6 py-3 text-left font-ui font-600 text-text-primary">
-                  Prakriti
+                  {getLabel('prakriti', language)}
                 </th>
                 <th className="px-6 py-3 text-left font-ui font-600 text-text-primary">
-                  GAD-7 Score
+                  {getLabel('score', language)}
                 </th>
                 <th className="px-6 py-3 text-left font-ui font-600 text-text-primary">
-                  Severity
+                  {getLabel('severity', language)}
                 </th>
                 <th className="px-6 py-3 text-left font-ui font-600 text-text-primary">
-                  Actions
+                  {getLabel('actions', language)}
                 </th>
               </tr>
             </thead>
@@ -187,7 +189,7 @@ export default function SessionsTab() {
               {filteredSessions.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="px-6 py-8 text-center text-text-secondary">
-                    No sessions found
+                    {getLabel('noSessionsFound', language)}
                   </td>
                 </tr>
               ) : (
@@ -219,13 +221,13 @@ export default function SessionsTab() {
                         href={`/results/${session.id}`}
                         className="inline-block px-3 py-1 bg-primary-500 text-white rounded hover:bg-primary-600 transition"
                       >
-                        View
+                        {getLabel('view', language)}
                       </Link>
                       <Link
                         href={`/results/${session.id}/report`}
                         className="inline-block px-3 py-1 bg-bg-section text-text-primary border border-border-light rounded hover:bg-border-light transition"
                       >
-                        PDF
+                        {getLabel('pdf', language)}
                       </Link>
                     </td>
                   </tr>
@@ -238,7 +240,7 @@ export default function SessionsTab() {
 
       {/* Summary */}
       <div className="text-sm text-text-secondary font-ui">
-        Showing {filteredSessions.length} of {sessions.length} sessions
+        {getLabel('showing', language)} {filteredSessions.length} {getLabel('of', language)} {sessions.length} {getLabel('sessions', language)}
       </div>
     </div>
   )

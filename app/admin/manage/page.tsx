@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import axios from 'axios'
+import { getLabel, Language } from '@/lib/localization'
 import MPPIItemsTab from '@/components/admin/MPPIItemsTab'
 import GAD7Tab from '@/components/admin/GAD7Tab'
 import SessionsTab from '@/components/admin/SessionsTab'
@@ -14,6 +15,7 @@ type TabName = 'mppi' | 'gad7' | 'sessions' | 'reports' | 'settings'
 export default function AdminManagePage() {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<TabName>('mppi')
+  const [language, setLanguage] = useState<Language>('EN')
 
   const handleLogout = async () => {
     try {
@@ -25,11 +27,11 @@ export default function AdminManagePage() {
   }
 
   const tabs: { name: TabName; label: string; icon: string }[] = [
-    { name: 'mppi', label: 'MPPI Items (118)', icon: '📋' },
-    { name: 'gad7', label: 'GAD-7', icon: '😟' },
-    { name: 'sessions', label: 'Sessions', icon: '📊' },
-    { name: 'reports', label: 'Reports', icon: '📈' },
-    { name: 'settings', label: 'Settings', icon: '⚙️' },
+    { name: 'mppi', label: getLabel('mppiItems', language), icon: '📋' },
+    { name: 'gad7', label: getLabel('gad7Items', language), icon: '😟' },
+    { name: 'sessions', label: getLabel('sessions', language), icon: '📊' },
+    { name: 'reports', label: getLabel('reports', language), icon: '📈' },
+    { name: 'settings', label: getLabel('settings', language), icon: '⚙️' },
   ]
 
   return (
@@ -40,17 +42,17 @@ export default function AdminManagePage() {
           <div className="flex items-start justify-between">
             <div>
               <h1 className="text-3xl font-display text-text-primary mb-2">
-                Admin Management
+                {getLabel('adminManagement', language)}
               </h1>
               <p className="text-sm text-text-secondary">
-                Manage assessment items, reports, and system configuration
+                {getLabel('manageItems', language)}
               </p>
             </div>
             <button
               onClick={handleLogout}
               className="px-4 py-2 bg-red-600/10 border border-red-600/20 rounded-lg font-ui font-600 text-red-600 hover:bg-red-600/20 transition"
             >
-              Logout
+              {getLabel('logout', language)}
             </button>
           </div>
         </div>

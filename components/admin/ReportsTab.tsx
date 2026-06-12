@@ -14,6 +14,7 @@ import {
   Pie,
   Cell,
 } from 'recharts'
+import { getLabel, Language } from '@/lib/localization'
 
 interface Stats {
   totalSessions: number
@@ -36,6 +37,7 @@ export default function ReportsTab() {
   const [stats, setStats] = useState<Stats | null>(null)
   const [loading, setLoading] = useState(true)
   const [exporting, setExporting] = useState(false)
+  const [language, setLanguage] = useState<Language>('EN')
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -72,11 +74,11 @@ export default function ReportsTab() {
   }
 
   if (loading) {
-    return <div className="text-center py-8">Loading reports...</div>
+    return <div className="text-center py-8">{getLabel('loading', language)}</div>
   }
 
   if (!stats) {
-    return <div className="text-center py-8">No data available</div>
+    return <div className="text-center py-8">{getLabel('noSessions', language)}</div>
   }
 
   const prakritiData = Object.entries(stats.prakritiDistribution).map(
@@ -103,7 +105,7 @@ export default function ReportsTab() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-bg-surface rounded-lg shadow-sm p-6">
           <div className="text-sm font-ui text-text-secondary mb-2">
-            Total Sessions
+            {getLabel('totalSessions', language)}
           </div>
           <div className="text-3xl font-display text-text-primary">
             {stats.totalSessions}
@@ -112,19 +114,19 @@ export default function ReportsTab() {
 
         <div className="bg-bg-surface rounded-lg shadow-sm p-6">
           <div className="text-sm font-ui text-text-secondary mb-2">
-            Completed
+            {getLabel('completed', language)}
           </div>
           <div className="text-3xl font-display text-text-primary">
             {stats.completedSessions}
           </div>
           <div className="text-xs text-text-tertiary mt-1">
-            {completionRate}% completion
+            {completionRate}% {getLabel('completionRate', language)}
           </div>
         </div>
 
         <div className="bg-bg-surface rounded-lg shadow-sm p-6">
           <div className="text-sm font-ui text-text-secondary mb-2">
-            In Progress
+            {getLabel('inProgressSessions', language)}
           </div>
           <div className="text-3xl font-display text-text-primary">
             {stats.inProgressSessions}
@@ -133,19 +135,19 @@ export default function ReportsTab() {
             {Math.round(
               (stats.inProgressSessions / stats.totalSessions) * 100
             )}
-            % active
+            % {getLabel('activePercentage', language)}
           </div>
         </div>
 
         <div className="bg-bg-surface rounded-lg shadow-sm p-6">
           <div className="text-sm font-ui text-text-secondary mb-2">
-            Avg Duration
+            {getLabel('avgDuration', language)}
           </div>
           <div className="text-3xl font-display text-text-primary">
             {stats.avgDuration || 0}m
           </div>
           <div className="text-xs text-text-tertiary mt-1">
-            {stats.lastSessionTime ? `Last: ${stats.lastSessionTime}` : 'No sessions'}
+            {stats.lastSessionTime ? `${getLabel('lastSession', language)}: ${stats.lastSessionTime}` : getLabel('noSessions', language)}
           </div>
         </div>
       </div>
@@ -155,7 +157,7 @@ export default function ReportsTab() {
         {/* Prakriti Distribution */}
         <div className="bg-bg-surface rounded-lg shadow-sm p-6">
           <h3 className="text-lg font-display text-text-primary mb-4">
-            Prakriti Distribution
+            {getLabel('prakritidistribution', language)}
           </h3>
           {prakritiData.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
@@ -178,7 +180,7 @@ export default function ReportsTab() {
             </ResponsiveContainer>
           ) : (
             <div className="h-80 flex items-center justify-center text-text-secondary">
-              No prakriti data available
+              {getLabel('noPrakritiData', language)}
             </div>
           )}
         </div>
@@ -186,7 +188,7 @@ export default function ReportsTab() {
         {/* GAD-7 Severity Distribution */}
         <div className="bg-bg-surface rounded-lg shadow-sm p-6">
           <h3 className="text-lg font-display text-text-primary mb-4">
-            GAD-7 Severity Breakdown
+            {getLabel('gad7SeverityBreakdown', language)}
           </h3>
           {gad7Data.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
@@ -217,7 +219,7 @@ export default function ReportsTab() {
             </ResponsiveContainer>
           ) : (
             <div className="h-80 flex items-center justify-center text-text-secondary">
-              No GAD-7 data available
+              {getLabel('noGad7Data', language)}
             </div>
           )}
         </div>
@@ -226,7 +228,7 @@ export default function ReportsTab() {
       {/* Data Export */}
       <div className="bg-bg-surface rounded-lg shadow-sm p-6">
         <h3 className="text-lg font-display text-text-primary mb-4">
-          Data Export
+          {getLabel('dataExport', language)}
         </h3>
         <div className="space-y-3">
           <button
@@ -234,19 +236,19 @@ export default function ReportsTab() {
             disabled={exporting}
             className="w-full px-6 py-3 bg-primary-500 text-white rounded-lg font-ui font-600 hover:bg-primary-600 disabled:opacity-50 transition"
           >
-            {exporting ? 'Exporting...' : 'Download CSV'} - All sessions + scores
+            {exporting ? getLabel('exporting', language) : getLabel('downloadCsv', language)} {getLabel('allSessionsScores', language)}
           </button>
           <button
             disabled
             className="w-full px-6 py-3 bg-bg-section border border-border-light text-text-primary rounded-lg font-ui font-600 disabled:opacity-50 transition"
           >
-            Export to Google Sheets - (Coming Soon)
+            {getLabel('exportToGoogleSheets', language)} - {getLabel('comingSoon', language)}
           </button>
           <button
             disabled
             className="w-full px-6 py-3 bg-bg-section border border-border-light text-text-primary rounded-lg font-ui font-600 disabled:opacity-50 transition"
           >
-            Generate PDF Report - (Coming Soon)
+            {getLabel('generatePdfReport', language)} - {getLabel('comingSoon', language)}
           </button>
         </div>
       </div>
