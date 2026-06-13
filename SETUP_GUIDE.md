@@ -4,10 +4,12 @@ This guide walks through setting up the platform from scratch for your research 
 
 ## Prerequisites
 
-- Windows/Mac/Linux computer
+- Windows / Mac / Linux
 - Node.js 18+ (download from nodejs.org)
 - Supabase account (free tier at supabase.com)
 - Google account (optional, for Sheets integration)
+
+> No `DATABASE_URL` or direct PostgreSQL access needed. All runtime DB access uses Supabase REST API. `DATABASE_URL` is only needed if running migration scripts locally (optional).
 
 ## Step 1: Install Dependencies
 
@@ -250,9 +252,10 @@ Open browser: http://localhost:3000
 | Problem | Solution |
 |---------|----------|
 | "Port 3000 already in use" | Change: `npm run dev -- -p 3001` |
-| Forgot admin password | Run: `npm run seed` (resets demo credentials) |
-| Items not showing in assessment | Admin panel → Items → Verify content is filled |
+| Forgot admin password | Update `ADMIN_PASSWORD` in `.env.local`, restart dev server |
+| Items not showing in assessment | Admin panel → MPPI Items → verify content filled |
 | Assessment freezes | Check browser console for errors (F12) |
+| Results not found after assessment | Open results page → click **Compute Results** button |
 
 ### Getting Help
 
