@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { useSessionStore } from '@/lib/store'
 import { getLocalizedField, type Language } from '@/lib/localization'
 import axios from 'axios'
@@ -118,7 +117,6 @@ interface Props {
 }
 
 export default function AssessmentInterface({ sessionId, onComplete }: Props) {
-  const router = useRouter()
   const {
     currentSection,
     currentItem,
@@ -188,15 +186,12 @@ export default function AssessmentInterface({ sessionId, onComplete }: Props) {
       setItemResponse(item.itemNumber, probe1!, probe2!, probe3!)
 
       // Check for phase transition (MPPI complete → GAD-7)
-      if (response.data.phaseTransition === 'GAD7') {
-        // Auto-redirect to GAD-7
-        router.push(`/assessment/${sessionId}/gad7`)
-      } else if (currentItem < totalMppiItems) {
+      if (response.data.phaseTransition === 'GAD7' || currentItem >= totalMppiItems) {
+        // Signal parent to switch to GAD-7 phase
+        onComplete()
+      } else {
         // Move to next MPPI item
         setCurrentItem(currentSection, currentItem + 1)
-      } else {
-        // Assessment complete
-        onComplete()
       }
     } catch (error) {
       console.error('Failed to save item:', error)

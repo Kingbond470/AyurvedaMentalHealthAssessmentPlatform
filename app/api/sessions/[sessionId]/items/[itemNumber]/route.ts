@@ -58,7 +58,7 @@ export async function PUT(
     let phaseTransition = null
     if (validated.itemNumber === 118) {
       // Auto-transition to GAD-7
-      await supabase.from('Session').update({
+      await supabase.from('session').update({
         phase: 'GAD7',
         current_item: 0,
         last_activity_at: new Date().toISOString(),
@@ -66,7 +66,7 @@ export async function PUT(
       phaseTransition = 'GAD7'
     } else {
       // Normal progression
-      await supabase.from('Session').update({
+      await supabase.from('session').update({
         current_item: validated.itemNumber + 1,
         last_activity_at: new Date().toISOString(),
       }).eq('id', params.sessionId)

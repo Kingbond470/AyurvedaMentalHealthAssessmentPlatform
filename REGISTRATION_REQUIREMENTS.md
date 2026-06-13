@@ -247,7 +247,7 @@ interface SessionStore {
 - [ ] `app/api/respondents/route.ts` - Validate all required fields
 - [ ] `app/api/sessions/route.ts` - Initialize phase + currentItem
 - [ ] `lib/store.ts` - Add sessionLanguage to Zustand
-- [ ] `prisma/schema.prisma` - Ensure language field on Respondent
+- [ ] `supabase/migrations` - Ensure language field on respondent table
 - [ ] Validation schema - Update to require all demographic fields
 
 ---

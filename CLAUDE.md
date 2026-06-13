@@ -615,7 +615,7 @@ Pre-launch to practitioners:
 ## References
 
 - **Scoring logic:** `lib/scoring.ts` (item-subtype map + algorithm)
-- **Data schema:** `prisma/schema.prisma`
+- **Data schema:** `supabase/migrations/` (SQL migration files)
 - **Assessment UX:** `components/AssessmentInterface.tsx`, `components/GAD7Interface.tsx`
 - **Endpoints:** `/app/api/`
 - **Styling:** `tailwind.config.js`, `app/globals.css`

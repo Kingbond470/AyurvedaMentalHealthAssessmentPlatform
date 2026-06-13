@@ -34,12 +34,41 @@ export async function GET(
         .select('*')
         .eq('session_id', params.sessionId)
         .single()
-      resultData = result
+
+      if (result) {
+        // Map snake_case DB fields → camelCase for frontend
+        resultData = {
+          predominantPrakriti: result.predominant_prakriti,
+          secondaryPrakriti: result.secondary_prakriti,
+          primaryCategory: result.primary_category,
+          subtypePercentages: result.subtype_percentages,
+          gad7Total: result.gad7_total,
+          gad7Severity: result.gad7_severity,
+          gad7Impairment: result.gad7_impairment,
+          computedAt: result.computed_at,
+        }
+      }
     }
+
+    // Map respondent snake_case → camelCase
+    const respondent = respondentData ? {
+      id: respondentData.id,
+      respondentCode: respondentData.respondent_code,
+      name: respondentData.name,
+      age: respondentData.age,
+      gender: respondentData.gender,
+      education: respondentData.education,
+      occupation: respondentData.occupation,
+      phone: respondentData.phone,
+      city: respondentData.city,
+      state: respondentData.state,
+      country: respondentData.country,
+      language: respondentData.language,
+    } : null
 
     return NextResponse.json({
       ...session,
-      respondent: respondentData,
+      respondent,
       result: resultData,
     }, { status: 200 })
   } catch (error) {

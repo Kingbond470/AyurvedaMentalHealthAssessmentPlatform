@@ -80,5 +80,5 @@ Each item structure:
 1. You paste 20 items as JSON
 2. I create batch file
 3. You run import locally
-4. Verify in DB (check `/admin/items` page or Prisma Studio)
+4. Verify in DB (check `/admin/items` page or Supabase Table Editor)
 5. Repeat for next 20 items

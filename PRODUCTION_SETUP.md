@@ -45,5 +45,5 @@ Items show "0 of 0" in Item Bank Management on Vercel because DATABASE_URL is no
 ## Troubleshooting
 
 - **"Showing 0 of 0 items"**: DATABASE_URL not set or incorrect
-- **Prisma Client error**: Run `npm run prisma:generate` locally if Prisma client is stale
+- **Supabase connection error**: Verify NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY are set in Vercel env vars
 - **Connection timeout**: Check Supabase IP whitelist includes Vercel IPs

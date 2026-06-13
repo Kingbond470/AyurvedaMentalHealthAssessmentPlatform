@@ -99,7 +99,7 @@ export async function POST(
     if (resultError) throw resultError
 
     // Mark session as completed
-    await supabase.from('Session').update({
+    await supabase.from('session').update({
       status: 'COMPLETED',
       completed_at: new Date().toISOString(),
     }).eq('id', params.sessionId)

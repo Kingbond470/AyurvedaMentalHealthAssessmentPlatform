@@ -373,7 +373,7 @@ User never knows or sees blank section
 
 ## Files to Modify
 
-- [ ] `prisma/schema.prisma` - Add HI/MR nullable fields
+- [ ] `supabase/migrations` - Add HI/MR nullable fields (already present in item table schema)
 - [ ] `lib/localization.ts` - Create helper functions
 - [ ] `lib/constants/prakriti.ts` - Language mappings
 - [ ] `components/AssessmentInterface.tsx` - Use getLocalizedField

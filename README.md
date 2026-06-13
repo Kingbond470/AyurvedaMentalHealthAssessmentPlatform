@@ -447,5 +447,5 @@ Issues? Questions? Reach out to the engineering team.
 ---
 
 **Built with Next.js + Supabase + Tailwind CSS**
-**Supabase-native v1.1 (Prisma removed)**
+**Supabase-native architecture (REST API, no ORM)**
 **Clinical-grade assessment platform for Ayurvedic-psychiatric research**

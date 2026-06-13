@@ -894,7 +894,7 @@ Given this is a research platform prioritizing reliability, offline resilience, 
 **Backend**
 - Node.js + Express (or Next.js API routes if preferred)
 - PostgreSQL (primary database — JSONB for scoring maps)
-- Prisma ORM
+- Supabase REST API (@supabase/supabase-js)
 - JWT authentication (access + refresh tokens)
 - bcrypt (password hashing)
 

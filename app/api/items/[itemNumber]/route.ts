@@ -12,7 +12,7 @@ export async function GET(
 
   try {
     const supabase = getSupabaseClient()
-    // Use 'Item' (PascalCase) table with camelCase columns — matches original Prisma schema
+    // 'Item' (PascalCase) table has camelCase columns and real content — admin editor uses same table
     const { data, error } = await supabase
       .from('Item')
       .select('*')
