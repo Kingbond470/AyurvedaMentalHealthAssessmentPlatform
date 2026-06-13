@@ -46,25 +46,42 @@ export default function ReportPage() {
   const [session, setSession] = useState<SessionData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [recalculating, setRecalculating] = useState(false)
+
+  const fetchSession = async () => {
+    try {
+      const response = await axios.get(`/api/sessions/${sessionId}`)
+      if (!response.data?.result) {
+        setError('Results not yet computed for this session')
+        return
+      }
+      setSession(response.data)
+    } catch (err) {
+      setError('Failed to load session data')
+      console.error('Failed to fetch session:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    const fetchSession = async () => {
-      try {
-        const response = await axios.get(`/api/sessions/${sessionId}`)
-        if (!response.data?.result) {
-          setError('Results not found for this session')
-          return
-        }
-        setSession(response.data)
-      } catch (err) {
-        setError('Failed to load session data')
-        console.error('Failed to fetch session:', err)
-      } finally {
-        setLoading(false)
-      }
-    }
     fetchSession()
   }, [sessionId])
+
+  const handleRecalculate = async () => {
+    setRecalculating(true)
+    setError(null)
+    try {
+      await axios.post(`/api/sessions/${sessionId}/calculate`)
+      setLoading(true)
+      await fetchSession()
+    } catch (err) {
+      setError('Failed to compute results')
+      console.error('Recalculate failed:', err)
+    } finally {
+      setRecalculating(false)
+    }
+  }
 
   if (loading) {
     return (
@@ -77,14 +94,25 @@ export default function ReportPage() {
   if (error || !session) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-bg-primary">
-        <div className="text-center">
-          <p className="text-red-500 font-body mb-4">{error || 'Session not found'}</p>
-          <a
-            href={`/results/${sessionId}`}
-            className="px-6 py-2 bg-primary-500 text-white font-ui rounded hover:bg-primary-600 transition"
-          >
-            Back to Results
-          </a>
+        <div className="text-center space-y-4">
+          <p className="text-red-500 font-body">{error || 'Session not found'}</p>
+          {error?.includes('not yet computed') && (
+            <button
+              onClick={handleRecalculate}
+              disabled={recalculating}
+              className="px-6 py-3 bg-primary-500 text-white font-ui font-600 rounded-lg hover:bg-primary-600 transition disabled:opacity-50"
+            >
+              {recalculating ? 'Computing...' : 'Compute Results'}
+            </button>
+          )}
+          <div>
+            <a
+              href={`/results/${sessionId}`}
+              className="px-6 py-2 bg-bg-section text-text-primary font-ui rounded hover:bg-border-light transition"
+            >
+              Back to Results
+            </a>
+          </div>
         </div>
       </div>
     )

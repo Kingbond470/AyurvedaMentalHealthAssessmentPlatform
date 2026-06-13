@@ -50,24 +50,36 @@ export default function ResultsPage() {
   const sessionId = params.sessionId as string
   const [session, setSession] = useState<SessionData | null>(null)
   const [loading, setLoading] = useState(true)
+  const [recalculating, setRecalculating] = useState(false)
   const [showDetails, setShowDetails] = useState(false)
 
-  useEffect(() => {
-    const fetchSession = async () => {
-      try {
-        const response = await axios.get(
-          `/api/sessions/${sessionId}`
-        )
-        setSession(response.data)
-      } catch (error) {
-        console.error('Failed to fetch session:', error)
-      } finally {
-        setLoading(false)
-      }
+  const fetchSession = async () => {
+    try {
+      const response = await axios.get(`/api/sessions/${sessionId}`)
+      setSession(response.data)
+    } catch (error) {
+      console.error('Failed to fetch session:', error)
+    } finally {
+      setLoading(false)
     }
+  }
 
+  useEffect(() => {
     fetchSession()
   }, [sessionId])
+
+  const handleRecalculate = async () => {
+    setRecalculating(true)
+    try {
+      await axios.post(`/api/sessions/${sessionId}/calculate`)
+      setLoading(true)
+      await fetchSession()
+    } catch (error) {
+      console.error('Recalculate failed:', error)
+    } finally {
+      setRecalculating(false)
+    }
+  }
 
   if (loading) {
     return (
@@ -80,7 +92,16 @@ export default function ResultsPage() {
   if (!session || !session.result) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-bg-primary">
-        <p className="text-text-secondary font-body">Results not found</p>
+        <div className="text-center space-y-4">
+          <p className="text-text-secondary font-body">Results not yet computed for this session.</p>
+          <button
+            onClick={handleRecalculate}
+            disabled={recalculating}
+            className="px-6 py-3 bg-primary-500 text-white font-ui font-600 rounded-lg hover:bg-primary-600 transition disabled:opacity-50"
+          >
+            {recalculating ? 'Computing...' : 'Compute Results'}
+          </button>
+        </div>
       </div>
     )
   }

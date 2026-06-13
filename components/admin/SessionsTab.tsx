@@ -28,7 +28,6 @@ interface SessionData {
 export default function SessionsTab() {
   const [sessions, setSessions] = useState<SessionData[]>([])
   const [loading, setLoading] = useState(true)
-  const [filterSeverity, setFilterSeverity] = useState<string>('all')
   const [filterStatus, setFilterStatus] = useState<string>('COMPLETED')
   const [dateFrom, setDateFrom] = useState<string>('')
   const [dateTo, setDateTo] = useState<string>('')
@@ -53,11 +52,6 @@ export default function SessionsTab() {
   const filteredSessions = sessions.filter((session) => {
     // Filter by status
     if (filterStatus !== 'all' && session.status !== filterStatus) {
-      return false
-    }
-
-    // Filter by severity
-    if (filterSeverity !== 'all' && session.result?.gad7_severity !== filterSeverity) {
       return false
     }
 
@@ -94,7 +88,7 @@ export default function SessionsTab() {
       {/* Filters */}
       <div className="bg-bg-surface rounded-lg shadow-sm p-6">
         <h3 className="text-lg font-display text-text-primary mb-4">{getLabel('filters', language)}</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-ui text-text-secondary mb-2">
               {getLabel('status', language)}
@@ -108,23 +102,6 @@ export default function SessionsTab() {
               <option value="COMPLETED">{getLabel('completed', language)}</option>
               <option value="IN_PROGRESS">{getLabel('inProgress', language)}</option>
               <option value="ABANDONED">{getLabel('abandoned', language)}</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-ui text-text-secondary mb-2">
-              {getLabel('gad7Severity', language)}
-            </label>
-            <select
-              value={filterSeverity}
-              onChange={(e) => setFilterSeverity(e.target.value)}
-              className="w-full px-3 py-2 border border-border-light rounded-lg font-ui bg-[var(--bg-secondary)] text-[var(--text-primary)]"
-            >
-              <option value="all">{getLabel('all', language)}</option>
-              <option value="MINIMAL">{getLabel('minimal', language)}</option>
-              <option value="MILD">{getLabel('mild', language)}</option>
-              <option value="MODERATE">{getLabel('moderate', language)}</option>
-              <option value="SEVERE">{getLabel('severe', language)}</option>
             </select>
           </div>
 

@@ -61,12 +61,22 @@ export async function GET(_: NextRequest) {
     const supabase = getSupabaseClient()
     const { data, error } = await supabase
       .from('session')
-      .select('*')
+      .select(`
+        *,
+        respondent:respondent_id (id, respondent_code, name, age, gender),
+        result:session_result (predominant_prakriti, gad7_total, gad7_severity)
+      `)
       .order('created_at', { ascending: false })
 
     if (error) throw error
 
-    return NextResponse.json(data || [], { status: 200 })
+    // Supabase returns session_result as array (FK on that table); normalize to object
+    const normalized = (data || []).map((session: any) => ({
+      ...session,
+      result: Array.isArray(session.result) ? (session.result[0] ?? null) : session.result,
+    }))
+
+    return NextResponse.json(normalized, { status: 200 })
   } catch (error) {
     console.error('Session fetch error:', error)
     return NextResponse.json(

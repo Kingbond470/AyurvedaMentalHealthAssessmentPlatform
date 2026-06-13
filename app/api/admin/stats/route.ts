@@ -24,12 +24,12 @@ export async function GET(_: NextRequest) {
 
     if (resultsError) throw resultsError
 
-    const prakritiBreaddown: Record<string, number> = {}
+    const prakritiDistribution: Record<string, number> = {}
     results?.forEach((result) => {
-      if (!prakritiBreaddown[result.predominant_prakriti]) {
-        prakritiBreaddown[result.predominant_prakriti] = 0
+      if (!prakritiDistribution[result.predominant_prakriti]) {
+        prakritiDistribution[result.predominant_prakriti] = 0
       }
-      prakritiBreaddown[result.predominant_prakriti]++
+      prakritiDistribution[result.predominant_prakriti]++
     })
 
     // GAD-7 distribution
@@ -54,7 +54,7 @@ export async function GET(_: NextRequest) {
         totalSessions,
         completedSessions,
         inProgressSessions,
-        prakritiBreaddown,
+        prakritiDistribution,
         gad7Distribution,
       },
       { status: 200 }
