@@ -56,12 +56,14 @@ export default function AssessmentSetupPage() {
       )
 
       const respondent = respondentRes.data
+      // Supabase returns snake_case; handle both for resilience
+      const respondentCode = respondent.respondent_code ?? respondent.respondentCode
 
       // Create session (fixed sequence: MPPI → GAD-7, no selection)
       const sessionRes = await axios.post(
         '/api/sessions',
         {
-          respondentCode: respondent.respondentCode,
+          respondentCode,
           practitionerName,
         }
       )
@@ -70,7 +72,7 @@ export default function AssessmentSetupPage() {
 
       // Update store
       setSessionId(session.id)
-      setRespondentCode(respondent.respondentCode)
+      setRespondentCode(respondentCode)
       setStoreLanguage(language as 'EN' | 'HI' | 'MR')
 
       // Redirect to assessment (always starts MPPI)

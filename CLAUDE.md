@@ -216,6 +216,15 @@ if (error) throw error
 return NextResponse.json(data)
 ```
 
+**⚠️ Snake_case vs camelCase — Critical Frontend Rule:**
+Supabase REST API always returns **snake_case** field names (e.g. `respondent_code`, `item_number`, `predictor_sanskrit`). Frontend components and Zustand stores use **camelCase**. Always map at the boundary:
+```typescript
+// In component fetch handlers — use ?? to handle both
+const code = data.respondent_code ?? data.respondentCode
+const itemNum = data.item_number ?? data.itemNumber
+```
+Never assume Supabase returns camelCase. Bugs from this mismatch are silent (field is `undefined`, not an error).
+
 **Key Routes (All Migrated):**
 - `POST /api/respondents` → create respondent (auto-generates respondent_code)
 - `POST /api/sessions` → create session (finds respondent by respondent_code)
