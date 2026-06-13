@@ -5,9 +5,9 @@ export async function GET(_: NextRequest) {
   try {
     const supabase = getSupabaseClient()
     const { data, error } = await supabase
-      .from('item')
+      .from('Item')
       .select('*')
-      .order('item_number', { ascending: true })
+      .order('itemNumber', { ascending: true })
 
     if (error) throw error
 
@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const supabase = getSupabaseClient()
     const { data, error } = await supabase
-      .from('item')
+      .from('Item')
       .insert([body])
       .select()
       .single()
