@@ -32,8 +32,20 @@ export default function MPPIItemsTab() {
       try {
         setLoading(true)
         const response = await axios.get('/api/admin/items')
-        // Filter to MPPI items only (1-118)
-        const mppiItems = response.data.filter((item: Item) => item.itemNumber <= 118)
+        // Map snake_case DB fields to camelCase, filter to MPPI items (1-118)
+        const mppiItems = response.data
+          .map((item: any) => ({
+            id: item.id,
+            itemNumber: item.item_number ?? item.itemNumber,
+            section: item.section,
+            sectionName: item.section_name ?? item.sectionName,
+            predictorSanskrit: item.predictor_sanskrit ?? item.predictorSanskrit ?? '',
+            predictorDevanagari: item.predictor_devanagari ?? item.predictorDevanagari ?? '',
+            coreProbeEn: item.core_probe_en ?? item.coreProbeEn,
+            coreProbeHi: item.core_probe_hi ?? item.coreProbeHi,
+            coreProbeMr: item.core_probe_mr ?? item.coreProbeMr,
+          }))
+          .filter((item: Item) => item.itemNumber <= 118)
         setItems(mppiItems.sort((a: Item, b: Item) => a.itemNumber - b.itemNumber))
       } catch (error) {
         console.error('Failed to fetch items:', error)
