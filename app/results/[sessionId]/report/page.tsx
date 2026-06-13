@@ -4,15 +4,13 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import axios from 'axios'
-import { getPrakritiFullName, ALL_SUBTYPES } from '@/lib/scoring'
-
-// react-pdf is browser-only — SSR will crash without this
-const PDFDownloadLink = dynamic(
+// react-pdf is browser-only — dynamically imported to avoid SSR crash
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const PDFDownloadLink = dynamic<any>(
   () => import('@react-pdf/renderer').then((mod) => mod.PDFDownloadLink),
   { ssr: false, loading: () => <span>Preparing PDF...</span> }
 )
 
-// Dynamically import the PDF document to avoid SSR issues
 const ReportPDFDocument = dynamic(
   () => import('@/components/ReportPDFDocument'),
   { ssr: false }
@@ -115,7 +113,7 @@ export default function ReportPage() {
             fileName={fileName}
             className="inline-block px-8 py-3 bg-primary-500 text-white font-ui font-600 rounded-lg hover:bg-primary-600 transition"
           >
-            {({ loading: pdfLoading }: { loading: boolean }) =>
+            {({ loading: pdfLoading }: any) =>
               pdfLoading ? 'Building PDF...' : 'Download PDF Report'
             }
           </PDFDownloadLink>
