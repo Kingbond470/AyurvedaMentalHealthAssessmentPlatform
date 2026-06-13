@@ -129,9 +129,9 @@ export default function GAD7Interface({ sessionId, onComplete }: Props) {
       </div>
 
       {/* Main Content */}
-      <main className="container-content px-4 py-8">
-        <div className="bg-bg-surface rounded-lg shadow-md p-8 animate-slideInUp">
-          <div className="mb-8 pb-6 border-b border-border-light">
+      <main className="container-content px-3 sm:px-4 py-4 sm:py-8">
+        <div className="bg-bg-surface rounded-lg shadow-md p-4 sm:p-8 animate-slideInUp">
+          <div className="mb-6 sm:mb-8 pb-4 sm:pb-6 border-b border-border-light">
             <div className="mb-3">
               <span className="text-xs font-ui uppercase text-text-tertiary">
                 {showImpairment
@@ -139,7 +139,7 @@ export default function GAD7Interface({ sessionId, onComplete }: Props) {
                   : `Item ${currentItemIndex + 1} of 7`}
               </span>
             </div>
-            <h2 className="text-2xl font-display text-text-primary">
+            <h2 className="text-base sm:text-xl font-display text-text-primary leading-snug">
               {showImpairment
                 ? 'How difficult have these problems made it to do your work, take care of things at home, or get along with other people?'
                 : `Over the last 2 weeks, how often have you been bothered by the following problem?\n\n${currentItem}`}
@@ -147,7 +147,7 @@ export default function GAD7Interface({ sessionId, onComplete }: Props) {
           </div>
 
           {/* Options */}
-          <div className="space-y-3">
+          <div className="space-y-2 sm:space-y-3">
             {(showImpairment
               ? IMPAIRMENT_OPTIONS.map((opt) => ({
                   ...opt,
@@ -164,19 +164,19 @@ export default function GAD7Interface({ sessionId, onComplete }: Props) {
                     setGAD7Response(currentItemIndex + 1, option.value)
                   }
                 }}
-                className={`w-full p-4 rounded-lg border-2 transition text-left font-ui ${
+                className={`w-full p-3 sm:p-4 rounded-lg border-2 transition text-left font-ui ${
                   (showImpairment ? impairmentScore : currentScore) === option.value
                     ? 'bg-primary-500 border-primary-500 text-white'
                     : 'bg-bg-section border-border-light text-text-primary hover:border-primary-500'
                 }`}
               >
-                <div className="font-600">{option.label}</div>
+                <div className="font-600 text-sm sm:text-base">{option.label}</div>
               </button>
             ))}
           </div>
 
           {/* Navigation */}
-          <div className="flex gap-3 mt-8">
+          <div className="flex gap-3 mt-6 sm:mt-8">
             <button
               onClick={() => {
                 if (showImpairment) {
@@ -187,7 +187,7 @@ export default function GAD7Interface({ sessionId, onComplete }: Props) {
                 }
               }}
               disabled={saving}
-              className="flex-1 px-4 py-3 bg-bg-section text-text-primary font-ui font-600 rounded-lg hover:bg-border-light transition disabled:opacity-50"
+              className="flex-1 px-3 sm:px-4 py-3 bg-bg-section text-text-primary font-ui font-600 rounded-lg hover:bg-border-light transition disabled:opacity-50 text-sm sm:text-base"
             >
               ← Previous
             </button>
@@ -200,9 +200,9 @@ export default function GAD7Interface({ sessionId, onComplete }: Props) {
                   (showImpairment && impairmentScore === undefined) ||
                   saving
                 }
-                className="flex-1 px-4 py-3 bg-primary-500 text-white font-ui font-600 rounded-lg hover:bg-primary-600 transition disabled:opacity-50"
+                className="flex-1 px-3 sm:px-4 py-3 bg-primary-500 text-white font-ui font-600 rounded-lg hover:bg-primary-600 transition disabled:opacity-50 text-sm sm:text-base"
               >
-                {saving ? 'Saving...' : showImpairment ? 'Complete Assessment' : 'Next Item →'}
+                {saving ? 'Saving...' : showImpairment ? 'Complete Assessment' : 'Next →'}
               </button>
             ) : null}
           </div>

@@ -86,10 +86,16 @@ button, input, select, textarea {
   --primary-light: #a0a0a0;
 }
 
+/* Mobile touch target minimum */
+button, a, select, input[type="checkbox"] {
+  -webkit-tap-highlight-color: transparent;
+}
+
 /* Utility classes */
 .container-content {
   max-width: 720px;
   margin: 0 auto;
+  width: 100%;
 }
 
 .container-dashboard {

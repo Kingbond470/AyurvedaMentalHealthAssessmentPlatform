@@ -248,16 +248,16 @@ export default function AssessmentInterface({ sessionId, onComplete }: Props) {
       </div>
 
       {/* Main Content */}
-      <main className="container-content px-4 py-8">
-        <div className="bg-bg-surface rounded-lg shadow-md p-8 animate-slideInUp">
+      <main className="container-content px-3 sm:px-4 py-4 sm:py-8">
+        <div className="bg-bg-surface rounded-lg shadow-md p-4 sm:p-8 animate-slideInUp">
           {/* Item Header */}
-          <div className="mb-8 pb-6 border-b border-border-light">
+          <div className="mb-6 sm:mb-8 pb-4 sm:pb-6 border-b border-border-light">
             <div className="mb-3">
               <span className="text-xs font-ui uppercase text-text-tertiary">
                 Item {currentItem} of 118
               </span>
             </div>
-            <h2 className="text-2xl font-display text-text-primary mb-2">
+            <h2 className="text-lg sm:text-2xl font-display text-text-primary mb-2">
               {item.predictorSanskrit}
             </h2>
             <p className="text-sm font-devanagari text-text-secondary">
@@ -269,7 +269,7 @@ export default function AssessmentInterface({ sessionId, onComplete }: Props) {
           </div>
 
           {/* Core Probe (Read Aloud) */}
-          <div className="bg-bg-section border-l-4 border-accent-500 rounded-md p-5 mb-8">
+          <div className="bg-bg-section border-l-4 border-accent-500 rounded-md p-3 sm:p-5 mb-6 sm:mb-8">
             <div className="text-xs font-ui uppercase text-text-tertiary mb-2">
               Read to respondent (not scored)
             </div>
@@ -279,7 +279,7 @@ export default function AssessmentInterface({ sessionId, onComplete }: Props) {
           </div>
 
           {/* Follow-up Probes */}
-          <div className="space-y-6">
+          <div className="space-y-5 sm:space-y-6">
             {[
               { probe: 1, question: getLocalizedField(item, 'probe1Question', language as Language), score: probe1, setter: setProbe1 },
               { probe: 2, question: getLocalizedField(item, 'probe2Question', language as Language), score: probe2, setter: setProbe2 },
@@ -325,20 +325,20 @@ export default function AssessmentInterface({ sessionId, onComplete }: Props) {
           </div>
 
           {/* Navigation */}
-          <div className="flex gap-3 mt-8">
+          <div className="flex gap-3 mt-6 sm:mt-8">
             <button
               onClick={handlePrevious}
               disabled={currentItem === 1 || saving}
-              className="flex-1 px-4 py-3 bg-bg-section text-text-primary font-ui font-600 rounded-lg hover:bg-border-light transition disabled:opacity-50"
+              className="flex-1 px-3 sm:px-4 py-3 bg-bg-section text-text-primary font-ui font-600 rounded-lg hover:bg-border-light transition disabled:opacity-50 text-sm sm:text-base"
             >
               ← Previous
             </button>
             <button
               onClick={handleNext}
               disabled={!canProceed || saving}
-              className="flex-1 px-4 py-3 bg-primary-500 text-white font-ui font-600 rounded-lg hover:bg-primary-600 transition disabled:opacity-50"
+              className="flex-1 px-3 sm:px-4 py-3 bg-primary-500 text-white font-ui font-600 rounded-lg hover:bg-primary-600 transition disabled:opacity-50 text-sm sm:text-base"
             >
-              {saving ? 'Saving...' : currentItem === totalMppiItems ? 'Complete MPPI' : 'Next Item →'}
+              {saving ? 'Saving...' : currentItem === totalMppiItems ? 'Complete MPPI' : 'Next →'}
             </button>
           </div>
         </div>

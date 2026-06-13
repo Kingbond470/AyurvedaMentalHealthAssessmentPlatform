@@ -5,6 +5,7 @@ import { ThemeProvider } from '@/components/ThemeProvider'
 export const metadata: Metadata = {
   title: 'Manas Prakriti & Anxiety Assessment Platform',
   description: 'Research-grade clinical assessment tool for Ayurvedic constitutional analysis and anxiety evaluation',
+  viewport: 'width=device-width, initial-scale=1, maximum-scale=1',
 }
 
 export default function RootLayout({

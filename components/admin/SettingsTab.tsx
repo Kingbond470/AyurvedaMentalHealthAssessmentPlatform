@@ -35,8 +35,8 @@ export default function SettingsTab() {
   return (
     <div className="space-y-8">
       {/* Google Sheets Integration */}
-      <div className="bg-bg-surface rounded-lg shadow-sm p-8">
-        <h3 className="text-lg font-display text-text-primary mb-6">
+      <div className="bg-bg-surface rounded-lg shadow-sm p-4 sm:p-8">
+        <h3 className="text-base sm:text-lg font-display text-text-primary mb-4 sm:mb-6">
           Google Sheets Integration
         </h3>
 
@@ -87,16 +87,16 @@ export default function SettingsTab() {
                 </div>
               </div>
 
-              <div className="flex gap-3">
+              <div className="flex flex-wrap gap-3">
                 <button
                   onClick={handleTestConnection}
-                  className="px-6 py-2 bg-bg-section border border-border-light rounded-lg font-ui font-600 text-text-primary hover:bg-border-light transition"
+                  className="px-4 sm:px-6 py-2 bg-bg-section border border-border-light rounded-lg font-ui font-600 text-text-primary hover:bg-border-light transition text-sm"
                 >
                   Test Connection
                 </button>
                 <button
                   onClick={handleDisconnect}
-                  className="px-6 py-2 bg-red-600/10 border border-red-600/50 rounded-lg font-ui font-600 text-red-600 hover:bg-red-600/20 transition"
+                  className="px-4 sm:px-6 py-2 bg-red-600/10 border border-red-600/50 rounded-lg font-ui font-600 text-red-600 hover:bg-red-600/20 transition text-sm"
                 >
                   Disconnect
                 </button>
@@ -113,8 +113,8 @@ export default function SettingsTab() {
       </div>
 
       {/* System Settings */}
-      <div className="bg-bg-surface rounded-lg shadow-sm p-8">
-        <h3 className="text-lg font-display text-text-primary mb-6">
+      <div className="bg-bg-surface rounded-lg shadow-sm p-4 sm:p-8">
+        <h3 className="text-base sm:text-lg font-display text-text-primary mb-4 sm:mb-6">
           System Settings
         </h3>
 

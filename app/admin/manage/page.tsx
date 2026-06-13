@@ -40,21 +40,21 @@ export default function AdminManagePage() {
     <div className="min-h-screen bg-bg-primary">
       {/* Header */}
       <header className="bg-bg-surface border-b border-border-light sticky top-0 z-20">
-        <div className="container-content px-4 py-6">
-          <div className="flex items-start justify-between">
+        <div className="container-content px-4 py-4 sm:py-6">
+          <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <h1 className="text-3xl font-display text-text-primary mb-2">
+              <h1 className="text-2xl sm:text-3xl font-display text-text-primary mb-1">
                 {getLabel('adminManagement', language)}
               </h1>
-              <p className="text-sm text-text-secondary">
+              <p className="text-xs sm:text-sm text-text-secondary">
                 {getLabel('manageItems', language)}
               </p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 shrink-0">
               <select
                 value={language}
                 onChange={(e) => setLanguage(e.target.value as any)}
-                className="px-4 py-2 bg-bg-section border border-border-light rounded-lg font-ui font-600 text-text-primary hover:bg-border-light transition"
+                className="px-2 sm:px-4 py-2 bg-bg-section border border-border-light rounded-lg font-ui font-600 text-text-primary hover:bg-border-light transition text-sm"
               >
                 <option value="EN">{getLabel('english', language)}</option>
                 <option value="HI">{getLabel('hindi', language)}</option>
@@ -62,7 +62,7 @@ export default function AdminManagePage() {
               </select>
               <button
                 onClick={handleLogout}
-                className="px-4 py-2 bg-red-600/10 border border-red-600/20 rounded-lg font-ui font-600 text-red-600 hover:bg-red-600/20 transition"
+                className="px-2 sm:px-4 py-2 bg-red-600/10 border border-red-600/20 rounded-lg font-ui font-600 text-red-600 hover:bg-red-600/20 transition text-sm"
               >
                 {getLabel('logout', language)}
               </button>

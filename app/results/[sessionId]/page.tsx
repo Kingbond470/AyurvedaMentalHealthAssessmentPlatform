@@ -134,11 +134,11 @@ export default function ResultsPage() {
       </header>
 
       {/* Results */}
-      <main className="container-results px-4 py-10">
-        <div className="space-y-8">
+      <main className="container-results px-3 sm:px-4 py-6 sm:py-10">
+        <div className="space-y-4 sm:space-y-8">
           {/* Predominant Prakriti */}
-          <div className="bg-bg-surface rounded-lg shadow-md p-8">
-            <h2 className="text-xl font-display text-text-secondary mb-1">
+          <div className="bg-bg-surface rounded-lg shadow-md p-4 sm:p-8">
+            <h2 className="text-base sm:text-xl font-display text-text-secondary mb-1">
               PREDOMINANT MANAS PRAKRITI
             </h2>
             <div className="mt-6">
@@ -149,7 +149,7 @@ export default function ResultsPage() {
                   borderLeft: `4px solid ${CATEGORY_COLORS[session.result.primaryCategory as keyof typeof CATEGORY_COLORS]}`,
                 }}
               >
-                <div className="text-3xl font-display text-text-primary">
+                <div className="text-2xl sm:text-3xl font-display text-text-primary">
                   {getLocalizedName(
                     session.result.predominantPrakriti,
                     language as Language,
@@ -194,11 +194,11 @@ export default function ResultsPage() {
           </div>
 
           {/* Subtype Distribution Chart */}
-          <div className="bg-bg-surface rounded-lg shadow-md p-8">
-            <h2 className="text-xl font-display text-text-primary mb-6">
+          <div className="bg-bg-surface rounded-lg shadow-md p-4 sm:p-8">
+            <h2 className="text-base sm:text-xl font-display text-text-primary mb-4 sm:mb-6">
               Full Subtype Distribution
             </h2>
-            <ResponsiveContainer width="100%" height={400}>
+            <ResponsiveContainer width="100%" height={280} className="sm:!h-[400px]">
               <BarChart data={chartData} layout="vertical" margin={{ left: 100 }}>
                 <XAxis type="number" />
                 <YAxis dataKey="name" type="category" width={90} />
@@ -220,11 +220,11 @@ export default function ResultsPage() {
           </div>
 
           {/* GAD-7 Result */}
-          <div className="bg-bg-surface rounded-lg shadow-md p-8">
-            <h2 className="text-xl font-display text-text-secondary mb-6">
+          <div className="bg-bg-surface rounded-lg shadow-md p-4 sm:p-8">
+            <h2 className="text-base sm:text-xl font-display text-text-secondary mb-4 sm:mb-6">
               GAD-7 ANXIETY ASSESSMENT
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               <div
                 className="p-6 rounded-lg"
                 style={{
@@ -238,7 +238,7 @@ export default function ResultsPage() {
                 <div className="text-sm font-ui text-text-secondary">
                   Total Score
                 </div>
-                <div className="text-4xl font-display text-text-primary mt-2">
+                <div className="text-3xl sm:text-4xl font-display text-text-primary mt-2">
                   {session.result.gad7Total}
                 </div>
                 <div className="text-sm font-ui text-text-secondary mt-2">
@@ -270,29 +270,23 @@ export default function ResultsPage() {
           </div>
 
           {/* Actions */}
-          <div className="flex gap-3 justify-center">
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link
               href={`/results/${sessionId}/report`}
-              className="px-6 py-3 bg-primary-500 text-white font-ui font-600 rounded-lg hover:bg-primary-600 transition"
+              className="px-6 py-3 bg-primary-500 text-white font-ui font-600 rounded-lg hover:bg-primary-600 transition text-center"
             >
               Download PDF Report
             </Link>
             <Link
-              href="/dashboard"
-              className="px-6 py-3 bg-bg-section text-text-primary font-ui font-600 rounded-lg hover:bg-border-light transition"
-            >
-              Return to Dashboard
-            </Link>
-            <Link
               href="/assessment/setup"
-              className="px-6 py-3 bg-bg-section text-text-primary font-ui font-600 rounded-lg hover:bg-border-light transition"
+              className="px-6 py-3 bg-bg-section text-text-primary font-ui font-600 rounded-lg hover:bg-border-light transition text-center"
             >
               Start New Assessment
             </Link>
           </div>
 
           {/* Expandable Details */}
-          <div className="bg-bg-surface rounded-lg shadow-md p-8">
+          <div className="bg-bg-surface rounded-lg shadow-md p-4 sm:p-8">
             <button
               onClick={() => setShowDetails(!showDetails)}
               className="flex items-center gap-2 text-text-primary font-ui font-600 hover:text-primary-500 transition"

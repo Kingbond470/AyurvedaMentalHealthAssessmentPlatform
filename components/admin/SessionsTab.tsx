@@ -131,8 +131,8 @@ export default function SessionsTab() {
         </div>
       </div>
 
-      {/* Sessions Table */}
-      <div className="bg-bg-surface rounded-lg shadow-sm overflow-hidden">
+      {/* Sessions Table — desktop */}
+      <div className="hidden md:block bg-bg-surface rounded-lg shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-bg-section border-b border-border-light">
@@ -189,7 +189,7 @@ export default function SessionsTab() {
                       {session.result?.predominant_prakriti || '—'}
                     </td>
                     <td className="px-6 py-4 font-ui font-600 text-text-primary">
-                      {session.result?.gad7_total || '—'} / 21
+                      {session.result?.gad7_total ?? '—'} / 21
                     </td>
                     <td className={`px-6 py-4 font-ui font-600 ${GAD7_COLORS[session.result?.gad7_severity as keyof typeof GAD7_COLORS] || 'text-text-secondary'}`}>
                       {session.result?.gad7_severity || '—'}
@@ -214,6 +214,63 @@ export default function SessionsTab() {
             </tbody>
           </table>
         </div>
+      </div>
+
+      {/* Sessions Cards — mobile */}
+      <div className="md:hidden space-y-3">
+        {filteredSessions.length === 0 ? (
+          <div className="bg-bg-surface rounded-lg shadow-sm px-4 py-8 text-center text-text-secondary font-ui text-sm">
+            {getLabel('noSessionsFound', language)}
+          </div>
+        ) : (
+          filteredSessions.map((session) => (
+            <div key={session.id} className="bg-bg-surface rounded-lg shadow-sm p-4 space-y-3">
+              <div className="flex justify-between items-start">
+                <div>
+                  <div className="font-ui font-600 text-text-primary text-sm">
+                    {session.respondent?.name || '—'}
+                  </div>
+                  <div className="font-mono text-xs text-text-tertiary mt-0.5">
+                    {session.respondent?.respondent_code || '—'}
+                  </div>
+                </div>
+                <div className="text-xs text-text-secondary font-ui">
+                  {new Date(session.created_at).toLocaleDateString()}
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-2 text-xs font-ui">
+                <div>
+                  <div className="text-text-tertiary">Age</div>
+                  <div className="text-text-primary font-600">{session.respondent?.age || '—'}</div>
+                </div>
+                <div>
+                  <div className="text-text-tertiary">Prakriti</div>
+                  <div className="text-text-primary font-600">{session.result?.predominant_prakriti || '—'}</div>
+                </div>
+                <div>
+                  <div className="text-text-tertiary">GAD-7</div>
+                  <div className={`font-600 ${GAD7_COLORS[session.result?.gad7_severity as keyof typeof GAD7_COLORS] || 'text-text-secondary'}`}>
+                    {session.result?.gad7_total ?? '—'} / 21
+                  </div>
+                </div>
+              </div>
+              <div className="flex gap-2 pt-1">
+                <Link
+                  href={`/results/${session.id}`}
+                  className="flex-1 py-2 bg-primary-500 text-white rounded font-ui font-600 text-xs text-center hover:bg-primary-600 transition"
+                >
+                  {getLabel('view', language)}
+                </Link>
+                <Link
+                  href={`/results/${session.id}/report`}
+                  className="flex-1 py-2 bg-bg-section text-text-primary border border-border-light rounded font-ui font-600 text-xs text-center hover:bg-border-light transition"
+                >
+                  {getLabel('pdf', language)}
+                </Link>
+              </div>
+            </div>
+          ))
+        )}
       </div>
 
       {/* Summary */}

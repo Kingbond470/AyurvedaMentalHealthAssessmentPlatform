@@ -123,9 +123,9 @@ export default function ReportPage() {
   const fileName = `MPAAP-Report-${session.respondent.respondentCode}-${new Date().toISOString().split('T')[0]}.pdf`
 
   return (
-    <div className="min-h-screen bg-bg-primary p-4">
+    <div className="min-h-screen bg-bg-primary p-3 sm:p-4">
       <div className="container-content mx-auto">
-        <div className="bg-bg-surface rounded-lg shadow-md p-8 text-center">
+        <div className="bg-bg-surface rounded-lg shadow-md p-5 sm:p-8 text-center">
           <h1 className="text-2xl font-display text-text-primary mb-4">
             Download Assessment Report
           </h1>

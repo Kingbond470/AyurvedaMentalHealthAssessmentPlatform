@@ -103,21 +103,21 @@ export default function ReportsTab() {
   return (
     <div className="space-y-8">
       {/* Session Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-bg-surface rounded-lg shadow-sm p-6">
-          <div className="text-sm font-ui text-text-secondary mb-2">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="bg-bg-surface rounded-lg shadow-sm p-4 sm:p-6">
+          <div className="text-xs sm:text-sm font-ui text-text-secondary mb-1 sm:mb-2">
             {getLabel('totalSessions', language)}
           </div>
-          <div className="text-3xl font-display text-text-primary">
+          <div className="text-2xl sm:text-3xl font-display text-text-primary">
             {stats.totalSessions}
           </div>
         </div>
 
-        <div className="bg-bg-surface rounded-lg shadow-sm p-6">
-          <div className="text-sm font-ui text-text-secondary mb-2">
+        <div className="bg-bg-surface rounded-lg shadow-sm p-4 sm:p-6">
+          <div className="text-xs sm:text-sm font-ui text-text-secondary mb-1 sm:mb-2">
             {getLabel('completed', language)}
           </div>
-          <div className="text-3xl font-display text-text-primary">
+          <div className="text-2xl sm:text-3xl font-display text-text-primary">
             {stats.completedSessions}
           </div>
           <div className="text-xs text-text-tertiary mt-1">
@@ -125,11 +125,11 @@ export default function ReportsTab() {
           </div>
         </div>
 
-        <div className="bg-bg-surface rounded-lg shadow-sm p-6">
-          <div className="text-sm font-ui text-text-secondary mb-2">
+        <div className="bg-bg-surface rounded-lg shadow-sm p-4 sm:p-6">
+          <div className="text-xs sm:text-sm font-ui text-text-secondary mb-1 sm:mb-2">
             {getLabel('inProgressSessions', language)}
           </div>
-          <div className="text-3xl font-display text-text-primary">
+          <div className="text-2xl sm:text-3xl font-display text-text-primary">
             {stats.inProgressSessions}
           </div>
           <div className="text-xs text-text-tertiary mt-1">
@@ -140,11 +140,11 @@ export default function ReportsTab() {
           </div>
         </div>
 
-        <div className="bg-bg-surface rounded-lg shadow-sm p-6">
-          <div className="text-sm font-ui text-text-secondary mb-2">
+        <div className="bg-bg-surface rounded-lg shadow-sm p-4 sm:p-6">
+          <div className="text-xs sm:text-sm font-ui text-text-secondary mb-1 sm:mb-2">
             {getLabel('avgDuration', language)}
           </div>
-          <div className="text-3xl font-display text-text-primary">
+          <div className="text-2xl sm:text-3xl font-display text-text-primary">
             {stats.avgDuration || 0}m
           </div>
           <div className="text-xs text-text-tertiary mt-1">
@@ -154,14 +154,14 @@ export default function ReportsTab() {
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8">
         {/* Prakriti Distribution */}
-        <div className="bg-bg-surface rounded-lg shadow-sm p-6">
-          <h3 className="text-lg font-display text-text-primary mb-4">
+        <div className="bg-bg-surface rounded-lg shadow-sm p-4 sm:p-6">
+          <h3 className="text-base sm:text-lg font-display text-text-primary mb-3 sm:mb-4">
             {getLabel('prakritidistribution', language)}
           </h3>
           {prakritiData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={220} className="sm:!h-[300px]">
               <BarChart data={prakritiData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#E0DDD5" />
                 <XAxis
@@ -187,12 +187,12 @@ export default function ReportsTab() {
         </div>
 
         {/* GAD-7 Severity Distribution */}
-        <div className="bg-bg-surface rounded-lg shadow-sm p-6">
-          <h3 className="text-lg font-display text-text-primary mb-4">
+        <div className="bg-bg-surface rounded-lg shadow-sm p-4 sm:p-6">
+          <h3 className="text-base sm:text-lg font-display text-text-primary mb-3 sm:mb-4">
             {getLabel('gad7SeverityBreakdown', language)}
           </h3>
           {gad7Data.length > 0 ? (
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={220} className="sm:!h-[300px]">
               <PieChart>
                 <Pie
                   data={gad7Data}
@@ -227,7 +227,7 @@ export default function ReportsTab() {
       </div>
 
       {/* Data Export */}
-      <div className="bg-bg-surface rounded-lg shadow-sm p-6">
+      <div className="bg-bg-surface rounded-lg shadow-sm p-4 sm:p-6">
         <h3 className="text-lg font-display text-text-primary mb-4">
           {getLabel('dataExport', language)}
         </h3>
