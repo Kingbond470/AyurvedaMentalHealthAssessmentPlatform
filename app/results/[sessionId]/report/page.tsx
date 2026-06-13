@@ -2,19 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
-import dynamic from 'next/dynamic'
 import axios from 'axios'
-// react-pdf is browser-only — dynamically imported to avoid SSR crash
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const PDFDownloadLink = dynamic<any>(
-  () => import('@react-pdf/renderer').then((mod) => mod.PDFDownloadLink),
-  { ssr: false, loading: () => <span>Preparing PDF...</span> }
-)
-
-const ReportPDFDocument = dynamic(
-  () => import('@/components/ReportPDFDocument'),
-  { ssr: false }
-)
 
 interface SessionData {
   id: string
@@ -47,6 +35,8 @@ export default function ReportPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [recalculating, setRecalculating] = useState(false)
+  // Holds actual react-pdf components after manual client-side import
+  const [pdf, setPdf] = useState<{ PDFDownloadLink: any; ReportPDFDocument: any } | null>(null)
 
   const fetchSession = async () => {
     try {
@@ -67,6 +57,18 @@ export default function ReportPage() {
   useEffect(() => {
     fetchSession()
   }, [sessionId])
+
+  // Load react-pdf components after mount — cannot use next/dynamic because
+  // PDFDownloadLink receives <Document> as a prop (not rendered by React),
+  // so the dynamic wrapper breaks react-pdf's internal renderer.
+  useEffect(() => {
+    Promise.all([
+      import('@react-pdf/renderer').then((m) => m.PDFDownloadLink),
+      import('@/components/ReportPDFDocument').then((m) => m.default),
+    ]).then(([PDFDownloadLink, ReportPDFDocument]) => {
+      setPdf({ PDFDownloadLink, ReportPDFDocument })
+    })
+  }, [])
 
   const handleRecalculate = async () => {
     setRecalculating(true)
@@ -136,15 +138,21 @@ export default function ReportPage() {
               : ''}
           </p>
 
-          <PDFDownloadLink
-            document={<ReportPDFDocument session={session} />}
-            fileName={fileName}
-            className="inline-block px-8 py-3 bg-primary-500 text-white font-ui font-600 rounded-lg hover:bg-primary-600 transition"
-          >
-            {({ loading: pdfLoading }: any) =>
-              pdfLoading ? 'Building PDF...' : 'Download PDF Report'
-            }
-          </PDFDownloadLink>
+          {pdf ? (
+            <pdf.PDFDownloadLink
+              document={<pdf.ReportPDFDocument session={session} />}
+              fileName={fileName}
+              className="inline-block px-8 py-3 bg-primary-500 text-white font-ui font-600 rounded-lg hover:bg-primary-600 transition"
+            >
+              {({ loading: pdfLoading }: any) =>
+                pdfLoading ? 'Building PDF...' : 'Download PDF Report'
+              }
+            </pdf.PDFDownloadLink>
+          ) : (
+            <span className="inline-block px-8 py-3 bg-primary-500/50 text-white font-ui font-600 rounded-lg cursor-wait">
+              Preparing PDF...
+            </span>
+          )}
 
           <div className="mt-8">
             <a

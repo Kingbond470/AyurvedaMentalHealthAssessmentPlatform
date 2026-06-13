@@ -169,7 +169,7 @@ export default function ReportsTab() {
                   fontSize={12}
                   tick={{ fill: '#5A5A55' }}
                 />
-                <YAxis fontSize={12} tick={{ fill: '#5A5A55' }} />
+                <YAxis fontSize={12} tick={{ fill: '#5A5A55' }} allowDecimals={false} />
                 <Tooltip
                   contentStyle={{
                     backgroundColor: '#FAFAF7',

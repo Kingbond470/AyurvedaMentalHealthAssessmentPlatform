@@ -59,24 +59,40 @@ export async function POST(request: NextRequest) {
 export async function GET(_: NextRequest) {
   try {
     const supabase = getSupabaseClient()
-    const { data, error } = await supabase
+
+    const { data: sessions, error } = await supabase
       .from('session')
-      .select(`
-        *,
-        respondent:respondent_id (id, respondent_code, name, age, gender),
-        result:session_result (predominant_prakriti, gad7_total, gad7_severity)
-      `)
+      .select('*')
       .order('created_at', { ascending: false })
 
     if (error) throw error
+    if (!sessions?.length) return NextResponse.json([], { status: 200 })
 
-    // Supabase returns session_result as array (FK on that table); normalize to object
-    const normalized = (data || []).map((session: any) => ({
+    // Batch-fetch respondents and results to avoid N+1 and embedded-join FK issues
+    const respondentIds = [...new Set(sessions.map((s: any) => s.respondent_id).filter(Boolean))]
+    const sessionIds = sessions.map((s: any) => s.id)
+
+    const [{ data: respondents }, { data: results }] = await Promise.all([
+      supabase
+        .from('respondent')
+        .select('id, respondent_code, name, age, gender')
+        .in('id', respondentIds),
+      supabase
+        .from('session_result')
+        .select('session_id, predominant_prakriti, gad7_total, gad7_severity')
+        .in('session_id', sessionIds),
+    ])
+
+    const respondentMap = new Map((respondents || []).map((r: any) => [r.id, r]))
+    const resultMap = new Map((results || []).map((r: any) => [r.session_id, r]))
+
+    const merged = sessions.map((session: any) => ({
       ...session,
-      result: Array.isArray(session.result) ? (session.result[0] ?? null) : session.result,
+      respondent: respondentMap.get(session.respondent_id) ?? null,
+      result: resultMap.get(session.id) ?? null,
     }))
 
-    return NextResponse.json(normalized, { status: 200 })
+    return NextResponse.json(merged, { status: 200 })
   } catch (error) {
     console.error('Session fetch error:', error)
     return NextResponse.json(
