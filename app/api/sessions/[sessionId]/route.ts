@@ -66,8 +66,16 @@ export async function GET(
       language: respondentData.language,
     } : null
 
+    // Map session snake_case → camelCase for frontend
     return NextResponse.json({
-      ...session,
+      id: session.id,
+      status: session.status,
+      phase: session.phase,
+      currentItem: session.current_item,
+      currentSection: session.current_section,
+      practitionerName: session.practitioner_name,
+      completedAt: session.completed_at,
+      createdAt: session.created_at,
       respondent,
       result: resultData,
     }, { status: 200 })

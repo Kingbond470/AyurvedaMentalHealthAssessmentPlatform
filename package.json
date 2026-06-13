@@ -7,7 +7,6 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "seed": "node scripts/seed.js",
     "seed:items": "node scripts/seed-mppi-items.js"
   },
   "dependencies": {
