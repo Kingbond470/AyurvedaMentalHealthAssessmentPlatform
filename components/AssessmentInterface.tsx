@@ -142,22 +142,8 @@ export default function AssessmentInterface({ sessionId, onComplete }: Props) {
     const fetchItem = async () => {
       try {
         setLoading(true)
-        // In production, fetch from DB
-        // For now, show placeholder
-        setItem({
-          id: `item-${currentItem}`,
-          itemNumber: currentItem,
-          section: currentSection,
-          sectionName: SECTION_NAMES[currentSection as keyof typeof SECTION_NAMES] || '',
-          predictorSanskrit: 'Predictor Name (Sanskrit)',
-          predictorDevanagari: 'Predictor Name (Devanagari)',
-          interpretation: 'Interpretation of this trait',
-          coreProbeEn: 'Core probe question to read aloud to respondent',
-          probe1QuestionEn: 'Follow-up probe 1 question?',
-          probe2QuestionEn: 'Follow-up probe 2 question?',
-          probe3QuestionEn: 'Follow-up probe 3 question?',
-          isObserverRated: currentSection === 16,
-        })
+        const response = await axios.get(`/api/items/${currentItem}`)
+        setItem(response.data)
 
         // Load existing response if any
         const existing = itemResponses[currentItem]
@@ -170,6 +156,8 @@ export default function AssessmentInterface({ sessionId, onComplete }: Props) {
           setProbe2(null)
           setProbe3(null)
         }
+      } catch (error) {
+        console.error('Failed to fetch item:', error)
       } finally {
         setLoading(false)
       }
