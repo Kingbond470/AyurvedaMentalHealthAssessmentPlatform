@@ -83,21 +83,29 @@ export async function PUT(
       try {
         // Get all MPPI responses
         const { data: itemResponses, error: itemError } = await supabase
-          .from('ItemResponse')
+          .from('item_response')
           .select('*')
           .eq('session_id', params.sessionId)
 
         if (!itemError && itemResponses) {
+          // Map snake_case DB fields → camelCase for scoring engine
+          const mapped = itemResponses.map((r: any) => ({
+            itemNumber: r.item_number,
+            probe1Score: r.probe1_score,
+            probe2Score: r.probe2_score,
+            probe3Score: r.probe3_score,
+          }))
+
           // Calculate MPPI scores
           const {
             subtypePercentages,
             predominantPrakriti,
             secondaryPrakriti,
             primaryCategory,
-          } = calculateSubtypeScores(itemResponses as any)
+          } = calculateSubtypeScores(mapped)
 
           // Create SessionResult
-          await supabase.from('SessionResult').upsert(
+          await supabase.from('session_result').upsert(
             {
               session_id: params.sessionId,
               subtype_percentages: subtypePercentages,
@@ -134,7 +142,7 @@ export async function PUT(
       }
     } else {
       // Just update activity
-      await supabase.from('Session').update({
+      await supabase.from('session').update({
         last_activity_at: new Date().toISOString(),
       }).eq('id', params.sessionId)
     }

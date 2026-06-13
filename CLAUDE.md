@@ -533,6 +533,15 @@ See `THEME_SYSTEM.md` for:
 - ⬜ Video interview integration
 - ⬜ Hospital EMR integration
 
+### Backlog — Resilience & UX
+- ⬜ **Offline/network resilience:** If response fails to save due to network drop,
+  queue it locally (Zustand + localStorage) and auto-retry on reconnect. Show user
+  "Saving..." indicator with retry count. Consider Service Worker for background sync.
+- ⬜ **Resume by phone number:** If respondent's phone number already exists in DB,
+  detect duplicate on setup form, fetch prior session, offer to resume from last saved
+  item (MPPI or GAD-7) instead of starting fresh. Requires: phone lookup on respondent
+  table, session status check, restore Zustand state from existing item_response rows.
+
 ### Performance Notes
 
 - For 10k+ sessions, add indexes on:

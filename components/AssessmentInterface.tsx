@@ -190,8 +190,14 @@ export default function AssessmentInterface({ sessionId, onComplete }: Props) {
         // Signal parent to switch to GAD-7 phase
         onComplete()
       } else {
-        // Move to next MPPI item
-        setCurrentItem(currentSection, currentItem + 1)
+        // Compute the correct section for the next item
+        const nextItem = currentItem + 1
+        const nextSection = parseInt(
+          Object.entries(SECTION_ITEMS).find(
+            ([, range]) => nextItem >= range[0] && nextItem <= range[1]
+          )?.[0] || String(currentSection)
+        )
+        setCurrentItem(nextSection, nextItem)
       }
     } catch (error) {
       console.error('Failed to save item:', error)
