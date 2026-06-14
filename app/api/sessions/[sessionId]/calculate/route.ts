@@ -3,6 +3,8 @@ import { getSupabaseClient } from '@/lib/supabase'
 import {
   calculateSubtypeScores,
   calculateGAD7Score,
+  ITEM_SUBTYPE_MAP,
+  type ItemConfig,
 } from '@/lib/scoring'
 
 export async function POST(
@@ -12,8 +14,8 @@ export async function POST(
   try {
     const supabase = getSupabaseClient()
 
-    // Get session with responses and visible item list in parallel
-    const [{ data: session }, { data: itemResponses }, { data: gad7Response }, { data: visibleItemRows }] = await Promise.all([
+    // Fetch session, item responses, GAD-7, and item configs (subtypes/visibility) in parallel
+    const [{ data: session }, { data: itemResponses }, { data: gad7Response }, { data: itemConfigRows }] = await Promise.all([
       supabase
         .from('session')
         .select('*')
@@ -30,22 +32,27 @@ export async function POST(
         .single(),
       supabase
         .from('Item')
-        .select('itemNumber')
-        .eq('isVisible', true)
-        .lte('itemNumber', 118)
-        .order('itemNumber', { ascending: true }),
+        .select('itemNumber, mappedSubtypes, isVisible, reverseScored')
+        .lte('itemNumber', 118),
     ])
 
     if (!session) {
       return NextResponse.json({ error: 'Session not found' }, { status: 404 })
     }
 
-    // Build visible item numbers list; fall back to all 1-118 if column missing
-    const visibleItemNumbers = (visibleItemRows && visibleItemRows.length > 0)
-      ? visibleItemRows.map((r: any) => r.itemNumber as number)
-      : Array.from({ length: 118 }, (_, i) => i + 1)
+    // Build item config map from DB; fall back to ITEM_SUBTYPE_MAP per item if DB entry missing
+    const itemConfigMap: Record<number, ItemConfig> = {}
+    ;(itemConfigRows || []).forEach((row: any) => {
+      const num = row.itemNumber ?? row.item_number
+      const dbSubtypes = row.mappedSubtypes ?? row.mapped_subtypes ?? []
+      itemConfigMap[num] = {
+        subtypes: dbSubtypes.length > 0 ? dbSubtypes : (ITEM_SUBTYPE_MAP[num] ?? []),
+        reverseScored: row.reverseScored ?? row.reverse_scored ?? false,
+        isVisible: row.isVisible ?? row.is_visible ?? true,
+      }
+    })
 
-    // Calculate MPPI scores using dynamic max_score for visible items only
+    // Calculate MPPI scores — DB subtypes + visibility + reverseScored all applied
     const mppiScores = calculateSubtypeScores(
       (itemResponses || []).map((ir: any) => ({
         itemNumber: ir.item_number,
@@ -53,7 +60,7 @@ export async function POST(
         probe2Score: ir.probe2_score,
         probe3Score: ir.probe3_score,
       })),
-      visibleItemNumbers
+      itemConfigMap
     )
 
     // Calculate GAD-7 scores

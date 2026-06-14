@@ -189,9 +189,15 @@ export function calculateItemTotal(
   return probe1Score + probe2Score + probe3Score
 }
 
+export interface ItemConfig {
+  subtypes: string[]
+  reverseScored?: boolean
+  isVisible?: boolean
+}
+
 export function calculateSubtypeScores(
   itemResponses: ItemResponseData[],
-  visibleItemNumbers?: number[]
+  itemConfigMap?: Record<number, ItemConfig>
 ): ScoringResult {
   // Initialize raw scores for all subtypes
   const subtypeRawScores: SubtypeScore = {}
@@ -207,10 +213,17 @@ export function calculateSubtypeScores(
       response.probe3Score
     )
 
-    const mappedSubtypes = ITEM_SUBTYPE_MAP[response.itemNumber] || []
+    // Use DB config when available; fall back to hardcoded ITEM_SUBTYPE_MAP per item
+    const dbConfig = itemConfigMap?.[response.itemNumber]
+    const mappedSubtypes =
+      (dbConfig?.subtypes?.length ? dbConfig.subtypes : null) ??
+      ITEM_SUBTYPE_MAP[response.itemNumber] ??
+      []
 
-    // Special case: Item 9 is reverse-scored for PRETA
-    if (response.itemNumber === 9) {
+    const isReverseScored = dbConfig?.reverseScored ?? (response.itemNumber === 9)
+
+    // Reverse-scored item: add inverted score to PRETA (item 9 behaviour)
+    if (isReverseScored) {
       const invertedScore = 12 - itemTotal
       subtypeRawScores['PRETA'] = (subtypeRawScores['PRETA'] || 0) + invertedScore
     }
@@ -221,22 +234,24 @@ export function calculateSubtypeScores(
     })
   })
 
-  // Compute dynamic max scores based on visible items only.
-  // If visibleItemNumbers not provided, fall back to hardcoded SUBTYPE_CONFIG values.
+  // Compute max scores dynamically from visible items.
+  // Uses DB config subtypes when available, falls back to ITEM_SUBTYPE_MAP.
   const subtypeMaxScores: SubtypeScore = {}
-  if (visibleItemNumbers && visibleItemNumbers.length > 0) {
-    Object.keys(SUBTYPE_CONFIG).forEach((subtype) => { subtypeMaxScores[subtype] = 0 })
-    visibleItemNumbers.forEach((itemNum) => {
-      const subtypes = ITEM_SUBTYPE_MAP[itemNum] || []
-      subtypes.forEach((subtype) => {
-        subtypeMaxScores[subtype] = (subtypeMaxScores[subtype] || 0) + 12
-      })
+  Object.keys(SUBTYPE_CONFIG).forEach((subtype) => { subtypeMaxScores[subtype] = 0 })
+
+  const itemNumbers = Object.keys(ITEM_SUBTYPE_MAP).map(Number)
+  itemNumbers.forEach((itemNum) => {
+    const dbConfig = itemConfigMap?.[itemNum]
+    // Skip hidden items (excluded from scoring)
+    if (dbConfig && dbConfig.isVisible === false) return
+    const subtypes =
+      (dbConfig?.subtypes?.length ? dbConfig.subtypes : null) ??
+      ITEM_SUBTYPE_MAP[itemNum] ??
+      []
+    subtypes.forEach((subtype) => {
+      subtypeMaxScores[subtype] = (subtypeMaxScores[subtype] || 0) + 12
     })
-  } else {
-    Object.keys(SUBTYPE_CONFIG).forEach((subtype) => {
-      subtypeMaxScores[subtype] = SUBTYPE_CONFIG[subtype].max_score
-    })
-  }
+  })
 
   // Calculate percentages
   const subtypePercentages: SubtypeScore = {}

@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import axios from 'axios'
-import { ITEM_SUBTYPE_MAP } from '@/lib/scoring'
 
 interface Item {
   id: string
@@ -88,8 +87,7 @@ export default function MPPIItemsTab() {
             coreProbeEn: item.core_probe_en ?? item.coreProbeEn,
             coreProbeHi: item.core_probe_hi ?? item.coreProbeHi,
             coreProbeMr: item.core_probe_mr ?? item.coreProbeMr,
-            // Always use ITEM_SUBTYPE_MAP (scoring engine source of truth) — DB field is unreliable
-            mappedSubtypes: ITEM_SUBTYPE_MAP[item.item_number ?? item.itemNumber] ?? [],
+            mappedSubtypes: item.mapped_subtypes ?? item.mappedSubtypes ?? [],
             isVisible: item.is_visible ?? item.isVisible ?? true,
           }))
           .filter((item: Item) => item.itemNumber <= 118)
