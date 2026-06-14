@@ -11,21 +11,21 @@ UPDATE "Item" SET "mappedSubtypes" = CASE "itemNumber"
   WHEN 6   THEN ARRAY['GANDHARVA']
   WHEN 7   THEN ARRAY['KAUBERA']
   WHEN 8   THEN ARRAY['KAUBERA']
-  WHEN 9   THEN ARRAY['BRAMHA']
+  WHEN 9   THEN ARRAY['BRAMHA','PRETA']
   WHEN 10  THEN ARRAY['BRAMHA']
   WHEN 11  THEN ARRAY['BRAMHA','ARSHA']
   WHEN 12  THEN ARRAY['AINDRA']
   WHEN 13  THEN ARRAY['BRAMHA']
   WHEN 14  THEN ARRAY['YAAMYA']
   WHEN 15  THEN ARRAY['KAUBERA']
-  WHEN 16  THEN ARRAY['GANDHARVA']
+  WHEN 16  THEN ARRAY['GANDHARVA','RAKSHAS','PRETA','ASURA']
   WHEN 17  THEN ARRAY['MATSYA']
   WHEN 18  THEN ARRAY['VANASPATYA']
   WHEN 19  THEN ARRAY['BRAMHA','YAAMYA']
   WHEN 20  THEN ARRAY['ARSHA']
   WHEN 21  THEN ARRAY['ARSHA']
   WHEN 22  THEN ARRAY['BRAMHA','ARSHA']
-  WHEN 23  THEN ARRAY['AINDRA']
+  WHEN 23  THEN ARRAY['AINDRA','SHAKUNA']
   WHEN 24  THEN ARRAY['BRAMHA','ARSHA']
   WHEN 25  THEN ARRAY['AINDRA']
   WHEN 26  THEN ARRAY['AINDRA']
@@ -129,6 +129,5 @@ WHERE "itemNumber" BETWEEN 1 AND 118;
 UPDATE "Item" SET "isObserverRated" = true WHERE "itemNumber" BETWEEN 110 AND 118;
 UPDATE "Item" SET "isObserverRated" = false WHERE "itemNumber" BETWEEN 1 AND 109;
 
--- Mark item 9 as reverse-scored (for PRETA subtype — inverted scoring)
-UPDATE "Item" SET "reverseScored" = true WHERE "itemNumber" = 9;
-UPDATE "Item" SET "reverseScored" = false WHERE "itemNumber" != 9 AND "itemNumber" BETWEEN 1 AND 118;
+-- No items use reverse scoring (dual-polarity items score forward to all mapped subtypes)
+UPDATE "Item" SET "reverseScored" = false WHERE "itemNumber" BETWEEN 1 AND 118;

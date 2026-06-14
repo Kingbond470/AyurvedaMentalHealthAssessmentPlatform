@@ -8,21 +8,21 @@ export const ITEM_SUBTYPE_MAP: Record<number, string[]> = {
   6: ['GANDHARVA'],
   7: ['KAUBERA'],
   8: ['KAUBERA'],
-  9: ['BRAMHA'],
+  9: ['BRAMHA', 'PRETA'],
   10: ['BRAMHA'],
   11: ['BRAMHA', 'ARSHA'],
   12: ['AINDRA'],
   13: ['BRAMHA'],
   14: ['YAAMYA'],
   15: ['KAUBERA'],
-  16: ['GANDHARVA'],
+  16: ['GANDHARVA', 'RAKSHAS', 'PRETA', 'ASURA'],
   17: ['MATSYA'],
   18: ['VANASPATYA'],
   19: ['BRAMHA', 'YAAMYA'],
   20: ['ARSHA'],
   21: ['ARSHA'],
   22: ['BRAMHA', 'ARSHA'],
-  23: ['AINDRA'],
+  23: ['AINDRA', 'SHAKUNA'],
   24: ['BRAMHA', 'ARSHA'],
   25: ['AINDRA'],
   26: ['AINDRA'],
@@ -219,14 +219,6 @@ export function calculateSubtypeScores(
       (dbConfig?.subtypes?.length ? dbConfig.subtypes : null) ??
       ITEM_SUBTYPE_MAP[response.itemNumber] ??
       []
-
-    const isReverseScored = dbConfig?.reverseScored ?? (response.itemNumber === 9)
-
-    // Reverse-scored item: add inverted score to PRETA (item 9 behaviour)
-    if (isReverseScored) {
-      const invertedScore = 12 - itemTotal
-      subtypeRawScores['PRETA'] = (subtypeRawScores['PRETA'] || 0) + invertedScore
-    }
 
     // Add itemTotal to all mapped subtypes
     mappedSubtypes.forEach((subtype) => {
