@@ -189,7 +189,10 @@ export function calculateItemTotal(
   return probe1Score + probe2Score + probe3Score
 }
 
-export function calculateSubtypeScores(itemResponses: ItemResponseData[]): ScoringResult {
+export function calculateSubtypeScores(
+  itemResponses: ItemResponseData[],
+  visibleItemNumbers?: number[]
+): ScoringResult {
   // Initialize raw scores for all subtypes
   const subtypeRawScores: SubtypeScore = {}
   Object.keys(SUBTYPE_CONFIG).forEach((subtype) => {
@@ -218,15 +221,29 @@ export function calculateSubtypeScores(itemResponses: ItemResponseData[]): Scori
     })
   })
 
-  // Calculate max scores and percentages
+  // Compute dynamic max scores based on visible items only.
+  // If visibleItemNumbers not provided, fall back to hardcoded SUBTYPE_CONFIG values.
   const subtypeMaxScores: SubtypeScore = {}
-  const subtypePercentages: SubtypeScore = {}
+  if (visibleItemNumbers && visibleItemNumbers.length > 0) {
+    Object.keys(SUBTYPE_CONFIG).forEach((subtype) => { subtypeMaxScores[subtype] = 0 })
+    visibleItemNumbers.forEach((itemNum) => {
+      const subtypes = ITEM_SUBTYPE_MAP[itemNum] || []
+      subtypes.forEach((subtype) => {
+        subtypeMaxScores[subtype] = (subtypeMaxScores[subtype] || 0) + 12
+      })
+    })
+  } else {
+    Object.keys(SUBTYPE_CONFIG).forEach((subtype) => {
+      subtypeMaxScores[subtype] = SUBTYPE_CONFIG[subtype].max_score
+    })
+  }
 
+  // Calculate percentages
+  const subtypePercentages: SubtypeScore = {}
   Object.keys(SUBTYPE_CONFIG).forEach((subtype) => {
-    const maxScore = SUBTYPE_CONFIG[subtype].max_score
-    subtypeMaxScores[subtype] = maxScore
+    const maxScore = subtypeMaxScores[subtype] || SUBTYPE_CONFIG[subtype].max_score
     subtypePercentages[subtype] =
-      (subtypeRawScores[subtype] / maxScore) * 100
+      maxScore > 0 ? (subtypeRawScores[subtype] / maxScore) * 100 : 0
   })
 
   // Sort and find predominant and secondary prakriti

@@ -54,9 +54,19 @@ export async function PUT(
 
     if (itemError) throw itemError
 
-    // Check if MPPI complete (item 118 is last)
+    // Find last visible MPPI item dynamically (accounts for hidden items)
+    const { data: lastVisibleRows } = await supabase
+      .from('Item')
+      .select('itemNumber')
+      .eq('isVisible', true)
+      .lte('itemNumber', 118)
+      .order('itemNumber', { ascending: false })
+      .limit(1)
+
+    const lastVisibleItem = lastVisibleRows?.[0]?.itemNumber ?? 118
+
     let phaseTransition = null
-    if (validated.itemNumber === 118) {
+    if (validated.itemNumber === lastVisibleItem) {
       // Auto-transition to GAD-7
       await supabase.from('session').update({
         phase: 'GAD7',
@@ -65,7 +75,7 @@ export async function PUT(
       }).eq('id', params.sessionId)
       phaseTransition = 'GAD7'
     } else {
-      // Normal progression
+      // Normal progression — frontend uses visible-numbers list for next item
       await supabase.from('session').update({
         current_item: validated.itemNumber + 1,
         last_activity_at: new Date().toISOString(),

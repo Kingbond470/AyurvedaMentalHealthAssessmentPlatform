@@ -12,8 +12,8 @@ export async function POST(
   try {
     const supabase = getSupabaseClient()
 
-    // Get session with responses
-    const [{ data: session }, { data: itemResponses }, { data: gad7Response }] = await Promise.all([
+    // Get session with responses and visible item list in parallel
+    const [{ data: session }, { data: itemResponses }, { data: gad7Response }, { data: visibleItemRows }] = await Promise.all([
       supabase
         .from('session')
         .select('*')
@@ -28,20 +28,32 @@ export async function POST(
         .select('*')
         .eq('session_id', params.sessionId)
         .single(),
+      supabase
+        .from('Item')
+        .select('itemNumber')
+        .eq('isVisible', true)
+        .lte('itemNumber', 118)
+        .order('itemNumber', { ascending: true }),
     ])
 
     if (!session) {
       return NextResponse.json({ error: 'Session not found' }, { status: 404 })
     }
 
-    // Calculate MPPI scores
+    // Build visible item numbers list; fall back to all 1-118 if column missing
+    const visibleItemNumbers = (visibleItemRows && visibleItemRows.length > 0)
+      ? visibleItemRows.map((r: any) => r.itemNumber as number)
+      : Array.from({ length: 118 }, (_, i) => i + 1)
+
+    // Calculate MPPI scores using dynamic max_score for visible items only
     const mppiScores = calculateSubtypeScores(
       (itemResponses || []).map((ir: any) => ({
         itemNumber: ir.item_number,
         probe1Score: ir.probe1_score,
         probe2Score: ir.probe2_score,
         probe3Score: ir.probe3_score,
-      }))
+      })),
+      visibleItemNumbers
     )
 
     // Calculate GAD-7 scores

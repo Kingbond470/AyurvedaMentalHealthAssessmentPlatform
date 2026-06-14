@@ -132,9 +132,23 @@ export default function AssessmentInterface({ sessionId, onComplete }: Props) {
   const [probe2, setProbe2] = useState<number | null>(null)
   const [probe3, setProbe3] = useState<number | null>(null)
   const [saving, setSaving] = useState(false)
+  const [visibleItems, setVisibleItems] = useState<number[]>([])
 
-  const totalMppiItems = 118
-  const progressPercent = (currentItem / totalMppiItems) * 100
+  // Load visible item numbers once on mount
+  useEffect(() => {
+    axios.get('/api/items/visible-numbers').then((r) => {
+      setVisibleItems(r.data)
+    }).catch(() => {
+      // Fallback: all 118
+      setVisibleItems(Array.from({ length: 118 }, (_, i) => i + 1))
+    })
+  }, [])
+
+  const totalMppiItems = visibleItems.length || 118
+  const currentIdx = visibleItems.indexOf(currentItem)
+  const progressPercent = visibleItems.length > 0
+    ? ((currentIdx + 1) / totalMppiItems) * 100
+    : (currentItem / 118) * 100
 
   useEffect(() => {
     const fetchItem = async () => {
@@ -186,18 +200,21 @@ export default function AssessmentInterface({ sessionId, onComplete }: Props) {
       setItemResponse(item.itemNumber, probe1!, probe2!, probe3!)
 
       // Check for phase transition (MPPI complete → GAD-7)
-      if (response.data.phaseTransition === 'GAD7' || currentItem >= totalMppiItems) {
-        // Signal parent to switch to GAD-7 phase
+      if (response.data.phaseTransition === 'GAD7') {
         onComplete()
       } else {
-        // Compute the correct section for the next item
-        const nextItem = currentItem + 1
-        const nextSection = parseInt(
-          Object.entries(SECTION_ITEMS).find(
-            ([, range]) => nextItem >= range[0] && nextItem <= range[1]
-          )?.[0] || String(currentSection)
-        )
-        setCurrentItem(nextSection, nextItem)
+        // Navigate to next visible item
+        const nextItem = visibleItems[currentIdx + 1]
+        if (!nextItem) {
+          onComplete()
+        } else {
+          const nextSection = parseInt(
+            Object.entries(SECTION_ITEMS).find(
+              ([, range]) => nextItem >= range[0] && nextItem <= range[1]
+            )?.[0] || String(currentSection)
+          )
+          setCurrentItem(nextSection, nextItem)
+        }
       }
     } catch (error) {
       console.error('Failed to save item:', error)
@@ -207,8 +224,8 @@ export default function AssessmentInterface({ sessionId, onComplete }: Props) {
   }
 
   const handlePrevious = () => {
-    if (currentItem > 1) {
-      const prevItem = currentItem - 1
+    const prevItem = visibleItems[currentIdx - 1]
+    if (prevItem) {
       const prevSection = Object.entries(SECTION_ITEMS).find(
         ([, range]) => prevItem >= range[0] && prevItem <= range[1]
       )?.[0]
@@ -232,7 +249,7 @@ export default function AssessmentInterface({ sessionId, onComplete }: Props) {
               Section {currentSection} of 16 • {SECTION_NAMES[currentSection as keyof typeof SECTION_NAMES]}
             </span>
             <span className="text-sm font-ui text-text-secondary">
-              Item {currentItem} of 118
+              Item {currentIdx + 1} of {totalMppiItems}
             </span>
           </div>
           <div className="progress-bar">
@@ -254,7 +271,7 @@ export default function AssessmentInterface({ sessionId, onComplete }: Props) {
           <div className="mb-6 sm:mb-8 pb-4 sm:pb-6 border-b border-border-light">
             <div className="mb-3">
               <span className="text-xs font-ui uppercase text-text-tertiary">
-                Item {currentItem} of 118
+                Item {currentIdx + 1} of {totalMppiItems}
               </span>
             </div>
             <h2 className="text-lg sm:text-2xl font-display text-text-primary mb-2">
@@ -328,7 +345,7 @@ export default function AssessmentInterface({ sessionId, onComplete }: Props) {
           <div className="flex gap-3 mt-6 sm:mt-8">
             <button
               onClick={handlePrevious}
-              disabled={currentItem === 1 || saving}
+              disabled={currentIdx <= 0 || saving}
               className="flex-1 px-3 sm:px-4 py-3 bg-bg-section text-text-primary font-ui font-600 rounded-lg hover:bg-border-light transition disabled:opacity-50 text-sm sm:text-base"
             >
               ← Previous
@@ -338,7 +355,7 @@ export default function AssessmentInterface({ sessionId, onComplete }: Props) {
               disabled={!canProceed || saving}
               className="flex-1 px-3 sm:px-4 py-3 bg-primary-500 text-white font-ui font-600 rounded-lg hover:bg-primary-600 transition disabled:opacity-50 text-sm sm:text-base"
             >
-              {saving ? 'Saving...' : currentItem === totalMppiItems ? 'Complete MPPI' : 'Next →'}
+              {saving ? 'Saving...' : currentIdx === totalMppiItems - 1 ? 'Complete MPPI' : 'Next →'}
             </button>
           </div>
         </div>

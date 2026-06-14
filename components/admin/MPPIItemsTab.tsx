@@ -14,9 +14,52 @@ interface Item {
   coreProbeEn?: string
   coreProbeHi?: string
   coreProbeMr?: string
+  mappedSubtypes: string[]
+  isVisible: boolean
 }
 
 const ITEMS_PER_PAGE = 25
+
+// Category + color for each of 16 subtypes
+const SUBTYPE_META: Record<string, { category: 'S' | 'R' | 'T'; bg: string; text: string }> = {
+  BRAMHA:      { category: 'S', bg: '#d1fae5', text: '#065f46' },
+  ARSHA:       { category: 'S', bg: '#d1fae5', text: '#065f46' },
+  AINDRA:      { category: 'S', bg: '#d1fae5', text: '#065f46' },
+  YAAMYA:      { category: 'S', bg: '#d1fae5', text: '#065f46' },
+  VARUNA:      { category: 'S', bg: '#d1fae5', text: '#065f46' },
+  KAUBERA:     { category: 'S', bg: '#d1fae5', text: '#065f46' },
+  GANDHARVA:   { category: 'S', bg: '#d1fae5', text: '#065f46' },
+  ASURA:       { category: 'R', bg: '#fef3c7', text: '#92400e' },
+  RAKSHAS:     { category: 'R', bg: '#fef3c7', text: '#92400e' },
+  PAISHACH:    { category: 'R', bg: '#fef3c7', text: '#92400e' },
+  SARPA:       { category: 'R', bg: '#fef3c7', text: '#92400e' },
+  PRETA:       { category: 'R', bg: '#fef3c7', text: '#92400e' },
+  SHAKUNA:     { category: 'R', bg: '#fef3c7', text: '#92400e' },
+  PASHAVA:     { category: 'T', bg: '#ede9fe', text: '#4c1d95' },
+  MATSYA:      { category: 'T', bg: '#ede9fe', text: '#4c1d95' },
+  VANASPATYA:  { category: 'T', bg: '#ede9fe', text: '#4c1d95' },
+}
+
+function PrakritiBadges({ subtypes }: { subtypes: string[] }) {
+  if (!subtypes || subtypes.length === 0) return <span className="text-text-tertiary text-xs">—</span>
+  return (
+    <div className="flex flex-wrap gap-1">
+      {subtypes.map((s) => {
+        const meta = SUBTYPE_META[s]
+        return (
+          <span
+            key={s}
+            style={{ backgroundColor: meta?.bg ?? '#e5e7eb', color: meta?.text ?? '#374151' }}
+            className="text-xs px-1.5 py-0.5 rounded font-ui font-600"
+            title={meta ? `${s} (${meta.category === 'S' ? 'Sattvika' : meta.category === 'R' ? 'Rajasika' : 'Tamasika'})` : s}
+          >
+            {s}
+          </span>
+        )
+      })}
+    </div>
+  )
+}
 
 export default function MPPIItemsTab() {
   const [items, setItems] = useState<Item[]>([])
@@ -26,13 +69,13 @@ export default function MPPIItemsTab() {
   const [currentPage, setCurrentPage] = useState(1)
   const [viewItem, setViewItem] = useState<Item | null>(null)
   const [viewLang, setViewLang] = useState<'en' | 'hi' | 'mr'>('en')
+  const [togglingId, setTogglingId] = useState<number | null>(null)
 
   useEffect(() => {
     const fetchItems = async () => {
       try {
         setLoading(true)
         const response = await axios.get('/api/admin/items')
-        // Map snake_case DB fields to camelCase, filter to MPPI items (1-118)
         const mppiItems = response.data
           .map((item: any) => ({
             id: item.id,
@@ -44,6 +87,8 @@ export default function MPPIItemsTab() {
             coreProbeEn: item.core_probe_en ?? item.coreProbeEn,
             coreProbeHi: item.core_probe_hi ?? item.coreProbeHi,
             coreProbeMr: item.core_probe_mr ?? item.coreProbeMr,
+            mappedSubtypes: item.mapped_subtypes ?? item.mappedSubtypes ?? [],
+            isVisible: item.is_visible ?? item.isVisible ?? true,
           }))
           .filter((item: Item) => item.itemNumber <= 118)
         setItems(mppiItems.sort((a: Item, b: Item) => a.itemNumber - b.itemNumber))
@@ -56,6 +101,20 @@ export default function MPPIItemsTab() {
 
     fetchItems()
   }, [])
+
+  const handleToggleVisibility = async (itemNumber: number, current: boolean) => {
+    setTogglingId(itemNumber)
+    try {
+      await axios.put(`/api/admin/items/${itemNumber}`, { isVisible: !current })
+      setItems((prev) =>
+        prev.map((it) => it.itemNumber === itemNumber ? { ...it, isVisible: !current } : it)
+      )
+    } catch (error) {
+      console.error('Failed to toggle visibility:', error)
+    } finally {
+      setTogglingId(null)
+    }
+  }
 
   // Filter items
   const filtered = items.filter((item) => {
@@ -81,7 +140,6 @@ export default function MPPIItemsTab() {
     setCurrentPage(1)
   }
 
-  // Language completion status
   const getStatus = (item: Item) => ({
     en: item.coreProbeEn ? '✓' : '✗',
     hi: item.coreProbeHi ? '✓' : '✗',
@@ -164,10 +222,23 @@ export default function MPPIItemsTab() {
         </div>
       </div>
 
+      {/* Legend */}
+      <div className="flex flex-wrap gap-3 text-xs font-ui">
+        <span className="px-2 py-1 rounded" style={{ backgroundColor: '#d1fae5', color: '#065f46' }}>S = Sattvika</span>
+        <span className="px-2 py-1 rounded" style={{ backgroundColor: '#fef3c7', color: '#92400e' }}>R = Rajasika</span>
+        <span className="px-2 py-1 rounded" style={{ backgroundColor: '#ede9fe', color: '#4c1d95' }}>T = Tamasika</span>
+        <span className="text-text-tertiary">Toggle eye icon to show/hide item from respondents</span>
+      </div>
+
       {/* Results Summary */}
       <div className="text-sm text-text-secondary font-ui">
         Showing {paginatedItems.length === 0 ? 0 : startIdx + 1}-
         {Math.min(startIdx + ITEMS_PER_PAGE, filtered.length)} of {filtered.length} items
+        {items.filter(i => !i.isVisible).length > 0 && (
+          <span className="ml-2 text-amber-600">
+            ({items.filter(i => !i.isVisible).length} hidden from respondents)
+          </span>
+        )}
       </div>
 
       {/* Table - Desktop */}
@@ -176,33 +247,21 @@ export default function MPPIItemsTab() {
           <table className="w-full">
             <thead className="bg-bg-section border-b border-border-light">
               <tr>
-                <th className="px-6 py-3 text-left text-sm font-ui font-600 text-text-primary">
-                  Item #
-                </th>
-                <th className="px-6 py-3 text-left text-sm font-ui font-600 text-text-primary">
-                  Predictor (Sanskrit)
-                </th>
-                <th className="px-6 py-3 text-left text-sm font-ui font-600 text-text-primary">
-                  Section
-                </th>
-                <th className="px-6 py-3 text-left text-sm font-ui font-600 text-text-primary">
-                  EN
-                </th>
-                <th className="px-6 py-3 text-left text-sm font-ui font-600 text-text-primary">
-                  HI
-                </th>
-                <th className="px-6 py-3 text-left text-sm font-ui font-600 text-text-primary">
-                  MR
-                </th>
-                <th className="px-6 py-3 text-left text-sm font-ui font-600 text-text-primary">
-                  Actions
-                </th>
+                <th className="px-4 py-3 text-left text-sm font-ui font-600 text-text-primary">Item #</th>
+                <th className="px-4 py-3 text-left text-sm font-ui font-600 text-text-primary">Predictor</th>
+                <th className="px-4 py-3 text-left text-sm font-ui font-600 text-text-primary">Sec</th>
+                <th className="px-4 py-3 text-left text-sm font-ui font-600 text-text-primary">Prakriti</th>
+                <th className="px-4 py-3 text-center text-sm font-ui font-600 text-text-primary">EN</th>
+                <th className="px-4 py-3 text-center text-sm font-ui font-600 text-text-primary">HI</th>
+                <th className="px-4 py-3 text-center text-sm font-ui font-600 text-text-primary">MR</th>
+                <th className="px-4 py-3 text-center text-sm font-ui font-600 text-text-primary">Visible</th>
+                <th className="px-4 py-3 text-left text-sm font-ui font-600 text-text-primary">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border-light">
               {paginatedItems.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-8 text-center text-text-secondary">
+                  <td colSpan={9} className="px-6 py-8 text-center text-text-secondary">
                     No items found
                   </td>
                 </tr>
@@ -212,52 +271,49 @@ export default function MPPIItemsTab() {
                   return (
                     <tr
                       key={item.id}
-                      className="hover:bg-bg-section transition border-b border-border-light last:border-b-0"
+                      className={`hover:bg-bg-section transition border-b border-border-light last:border-b-0 ${!item.isVisible ? 'opacity-50' : ''}`}
                     >
-                      <td className="px-6 py-4 text-sm font-ui font-600 text-text-primary">
+                      <td className="px-4 py-4 text-sm font-ui font-600 text-text-primary">
                         {item.itemNumber}
                       </td>
-                      <td className="px-6 py-4 text-sm font-body text-text-primary">
+                      <td className="px-4 py-4 text-sm font-body text-text-primary">
                         <div>{item.predictorSanskrit}</div>
                         <div className="text-xs text-text-secondary font-devanagari">
                           {item.predictorDevanagari}
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-sm font-ui text-text-secondary">
+                      <td className="px-4 py-4 text-sm font-ui text-text-secondary">
                         {item.section}
                       </td>
-                      <td className="px-6 py-4 text-sm font-ui font-600 text-center">
-                        <span
-                          className={
-                            status.en === '✓' ? 'text-green-600' : 'text-red-600'
-                          }
-                        >
+                      <td className="px-4 py-4 max-w-[200px]">
+                        <PrakritiBadges subtypes={item.mappedSubtypes} />
+                      </td>
+                      <td className="px-4 py-4 text-sm font-ui font-600 text-center">
+                        <span className={status.en === '✓' ? 'text-green-600' : 'text-red-600'}>
                           {status.en}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-sm font-ui font-600 text-center">
-                        <span
-                          className={
-                            status.hi === '✓'
-                              ? 'text-green-600'
-                              : 'text-text-tertiary'
-                          }
-                        >
+                      <td className="px-4 py-4 text-sm font-ui font-600 text-center">
+                        <span className={status.hi === '✓' ? 'text-green-600' : 'text-text-tertiary'}>
                           {status.hi}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-sm font-ui font-600 text-center">
-                        <span
-                          className={
-                            status.mr === '✓'
-                              ? 'text-green-600'
-                              : 'text-text-tertiary'
-                          }
-                        >
+                      <td className="px-4 py-4 text-sm font-ui font-600 text-center">
+                        <span className={status.mr === '✓' ? 'text-green-600' : 'text-text-tertiary'}>
                           {status.mr}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-sm font-ui">
+                      <td className="px-4 py-4 text-center">
+                        <button
+                          onClick={() => handleToggleVisibility(item.itemNumber, item.isVisible)}
+                          disabled={togglingId === item.itemNumber}
+                          title={item.isVisible ? 'Visible to respondents — click to hide' : 'Hidden from respondents — click to show'}
+                          className={`text-lg transition ${togglingId === item.itemNumber ? 'opacity-40' : 'hover:scale-110'}`}
+                        >
+                          {item.isVisible ? '👁' : '🚫'}
+                        </button>
+                      </td>
+                      <td className="px-4 py-4 text-sm font-ui">
                         <div className="flex gap-2">
                           <Link
                             href={`/admin/items/${item.itemNumber}`}
@@ -290,12 +346,26 @@ export default function MPPIItemsTab() {
           paginatedItems.map((item) => {
             const status = getStatus(item)
             return (
-              <div key={item.id} className="bg-bg-surface rounded-lg p-4 border border-border-light space-y-3">
-                <div>
-                  <div className="font-ui font-600 text-text-primary text-sm">Item #{item.itemNumber}</div>
-                  <div className="text-xs text-text-secondary mt-1">{item.predictorSanskrit}</div>
-                  <div className="text-xs text-text-secondary font-devanagari">{item.predictorDevanagari}</div>
+              <div
+                key={item.id}
+                className={`bg-bg-surface rounded-lg p-4 border border-border-light space-y-3 ${!item.isVisible ? 'opacity-50' : ''}`}
+              >
+                <div className="flex justify-between items-start">
+                  <div>
+                    <div className="font-ui font-600 text-text-primary text-sm">Item #{item.itemNumber}</div>
+                    <div className="text-xs text-text-secondary mt-1">{item.predictorSanskrit}</div>
+                    <div className="text-xs text-text-secondary font-devanagari">{item.predictorDevanagari}</div>
+                  </div>
+                  <button
+                    onClick={() => handleToggleVisibility(item.itemNumber, item.isVisible)}
+                    disabled={togglingId === item.itemNumber}
+                    title={item.isVisible ? 'Visible — tap to hide' : 'Hidden — tap to show'}
+                    className="text-xl ml-2 shrink-0"
+                  >
+                    {item.isVisible ? '👁' : '🚫'}
+                  </button>
                 </div>
+                <PrakritiBadges subtypes={item.mappedSubtypes} />
                 <div className="flex gap-2 text-xs">
                   <span>Sec {item.section}</span>
                   <span className={status.en === '✓' ? 'text-green-600' : 'text-red-600'}>EN {status.en}</span>
@@ -335,12 +405,8 @@ export default function MPPIItemsTab() {
 
           <div className="flex gap-1">
             {Array.from({ length: totalPages }, (_, i) => i + 1)
-              .filter((page) => {
-                // Show current page and ±2 pages
-                return Math.abs(page - currentPage) <= 2 || page === 1 || page === totalPages
-              })
+              .filter((page) => Math.abs(page - currentPage) <= 2 || page === 1 || page === totalPages)
               .map((page, idx, arr) => {
-                // Add ellipsis if gap
                 if (idx > 0 && arr[idx - 1] !== page - 1) {
                   return (
                     <span key={`ellipsis-${idx}`} className="px-2 py-2 text-text-secondary">
@@ -348,7 +414,6 @@ export default function MPPIItemsTab() {
                     </span>
                   )
                 }
-
                 return (
                   <button
                     key={page}
@@ -380,9 +445,14 @@ export default function MPPIItemsTab() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="bg-bg-surface rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto flex flex-col">
             <div className="sticky top-0 bg-bg-section border-b border-border-light p-6 flex items-center justify-between shrink-0">
-              <h2 className="text-xl font-display text-text-primary">
-                Item #{viewItem.itemNumber}
-              </h2>
+              <div>
+                <h2 className="text-xl font-display text-text-primary">
+                  Item #{viewItem.itemNumber}
+                </h2>
+                <div className="mt-2">
+                  <PrakritiBadges subtypes={viewItem.mappedSubtypes} />
+                </div>
+              </div>
               <button
                 onClick={() => setViewItem(null)}
                 className="text-text-secondary hover:text-text-primary text-2xl"
@@ -431,6 +501,13 @@ export default function MPPIItemsTab() {
                       ? viewItem.coreProbeHi || '—'
                       : viewItem.coreProbeMr || '—'}
                 </p>
+              </div>
+
+              <div className="flex items-center gap-3 p-3 bg-bg-section rounded-lg">
+                <span className="font-ui text-sm text-text-secondary">Respondent visibility:</span>
+                <span className={`font-ui font-600 text-sm ${viewItem.isVisible ? 'text-green-600' : 'text-red-500'}`}>
+                  {viewItem.isVisible ? '👁 Visible' : '🚫 Hidden'}
+                </span>
               </div>
 
               <div className="pt-4 border-t border-border-light">
